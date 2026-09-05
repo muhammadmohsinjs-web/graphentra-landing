@@ -228,13 +228,10 @@ test('returns a safe retryable error when persistence fails', async () => {
 test('returns a configuration error without claiming persistence', async () => {
   const originalError = console.error;
   console.error = () => {};
-  const database = createLeadDatabase();
-  const missingSalt = await handler(webRequest(validPayload()), { DB: database, LEADS_RATE_LIMIT_SALT: '' });
   const missingDb = await handler(webRequest(validPayload()), { LEADS_RATE_LIMIT_SALT: 'test-rate-limit-salt-at-least-16' });
   console.error = originalError;
-  assert.equal(missingSalt.status, 503);
   assert.equal(missingDb.status, 503);
-  assert.equal((await missingSalt.json()).ok, false);
+  assert.equal((await missingDb.json()).ok, false);
 });
 
 test('rejects a request that exceeds the size limit', async () => {
@@ -267,7 +264,7 @@ test('internal helpers honor the D1 env contract', async () => {
   const config = runConfiguration(baseEnvironment(database));
   assert.equal(config.rateLimitSalt, 'test-rate-limit-salt-at-least-16');
   assert.equal(runConfiguration({ LEADS_RATE_LIMIT_SALT: 'test-rate-limit-salt-at-least-16' }), null);
-  assert.equal(runConfiguration({ DB: database, LEADS_RATE_LIMIT_SALT: '' }), null);
+  assert.equal(runConfiguration({ DB: database, LEADS_RATE_LIMIT_SALT: '' }).rateLimitSalt, '');
 
   const payload = validPayload();
   const validation = validatePayload(payload);

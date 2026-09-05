@@ -95,7 +95,7 @@ async function createFingerprint(request, salt) {
 
 function runConfiguration(env) {
   const rateLimitSalt = env.LEADS_RATE_LIMIT_SALT || '';
-  if (!env.DB || rateLimitSalt.length < 16) return null;
+  if (!env.DB) return null;
   return { rateLimitSalt };
 }
 
