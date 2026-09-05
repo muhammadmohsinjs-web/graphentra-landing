@@ -8,19 +8,21 @@
     "binding": "ASSETS",
     "run_worker_first": ["/api/*"],
   },
+ {
   "observability": {
     "logs": {
       "enabled": true,
       "head_sampling_rate": 1,
       "invocation_logs": true,
-      "persist": true,
+      "persist": true
     },
     "traces": {
-      "enabled": false,
+      "enabled": true,
       "head_sampling_rate": 1,
-      "persist": true,
-    },
-  },
+      "persist": true
+    }
+  }
+}
   "vars": {
     "WEBSITE_LEAD_SOURCE": "website",
   },
