@@ -200,7 +200,14 @@ async function handler(request, env) {
 
   const config = runConfiguration(env);
   if (!config) {
-    console.error('Lead endpoint is not configured.', { requestId });
+    console.error('Lead endpoint is not configured.', {
+      requestId,
+      dbBindingType: typeof env.DB,
+      hasDB: Boolean(env.DB),
+      dbHasPrepare: Boolean(env.DB && typeof env.DB.prepare === 'function'),
+      hasSalt: Boolean(env.LEADS_RATE_LIMIT_SALT),
+      saltLength: env.LEADS_RATE_LIMIT_SALT ? env.LEADS_RATE_LIMIT_SALT.length : 0
+    });
     return sendError(503, requestId);
   }
 
@@ -217,7 +224,12 @@ async function handler(request, env) {
     }
     return Response.json({ ok: true, requestId }, { status: 201 });
   } catch (error) {
-    console.error('Lead persistence request failed.', { requestId, reason: error && error.name });
+    console.error('Lead persistence request failed.', {
+      requestId,
+      reason: error && error.name,
+      message: error && error.message,
+      stack: error && error.stack.slice(0, 500)
+    });
     return sendError(503, requestId);
   }
 }
