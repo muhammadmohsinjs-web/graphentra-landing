@@ -82,11 +82,11 @@ The included `wrangler.jsonc` declares the `graphentra-leads` D1 binding, deploy
    npx wrangler login
    npx wrangler secret put LEADS_RATE_LIMIT_SALT
    ```
-3. Deploy:
+3. Build and deploy:
    ```sh
    npm run deploy
    ```
-   `npm run deploy` runs the build and uploads the Worker plus static assets.
+   `npm run deploy` runs the build and uploads the Worker plus static assets. Deploying through a CI build environment (e.g. the Workers "Builds" tab) works with either `npm run deploy` or a plain `npx wrangler deploy`, because the project's `prepare` script builds `dist/` automatically during `npm ci`/`npm install`.
 4. Submit a test lead, confirm the row in the D1 `leads` table, and verify that a second rapid click does not create a second row.
 
 If you created the D1 database through a different name or in a different account, update `database_name`/`database_id` under `d1_databases` in `wrangler.jsonc`.
