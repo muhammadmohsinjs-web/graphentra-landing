@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111510">
+  <title>Graphentra — Know what your change touches</title>
+  <meta name="description" content="Meet Graphentra: change intelligence that connects code changes to affected application areas, focused verification, and evidence your team can review. In development.">
+  <meta property="og:title" content="Graphentra — Know what your change touches">
+  <meta property="og:description" content="From a code change to a clearer verification plan. Explore the vision for Graphentra.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a class="brand" href="#top" aria-label="Graphentra home"><img src="mark.svg" width="31" height="31" alt=""><span>graphentra</span></a>
+      <nav class="desktop-nav" aria-label="Main navigation">
+        <a href="#platform">Platform</a><a href="#workflow">How it works</a><a href="#approach">Our approach</a>
+      </nav>
+      <a class="header-cta" href="#example">Explore a change <span aria-hidden="true">↗</span></a>
+      <button class="menu-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-nav"><span></span><span></span></button>
+    </div>
+    <nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation" hidden><a href="#platform">Platform</a><a href="#workflow">How it works</a><a href="#approach">Our approach</a><a href="#example">Explore a change ↗</a></nav>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="shell hero-layout">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="tiny-mark" aria-hidden="true">✳</span> CLARITY BETWEEN CODE & RELEASE</div>
+          <h1>A small change.<br>A bigger picture.<br><em>Now connected.</em></h1>
+          <p class="hero-description">Know what your code change touches. Focus on what needs checking. Move toward your next release with evidence.</p>
+          <div class="hero-actions"><a class="button button-lime" href="#example">Explore the workflow <span aria-hidden="true">↗</span></a><a class="text-link" href="#platform">Meet Graphentra <span aria-hidden="true">↓</span></a></div>
+          <div class="stage-note"><span class="stage-pill">IN DEVELOPMENT</span><span>Change intelligence first. Verification next.</span></div>
+        </div>
+
+        <div class="product-window" id="example">
+          <div class="window-bar"><div class="window-brand"><img src="mark.svg" width="19" height="19" alt=""><span>Change workspace</span></div><span class="sample-label">PRODUCT CONCEPT</span></div>
+          <div class="pr-row"><span class="pr-icon" aria-hidden="true">⑂</span><div><strong>Update shared authentication</strong><span>Example PR #482 <b>·</b> 1 changed function</span></div><span class="pr-badge">OPEN</span></div>
+          <div class="demo-controls" aria-label="Example workflow view"><button type="button" class="view-button active" data-view="impact" aria-pressed="true">01 <span>Understand impact</span></button><button type="button" class="view-button" data-view="verification" aria-pressed="false">02 <span>See verification</span></button></div>
+
+          <div id="impact-view" class="demo-view">
+            <div class="graph-canvas">
+              <div class="changed-symbol"><div class="code-symbol" aria-hidden="true">ƒ</div><div><span>CHANGED FUNCTION</span><strong>validateToken()</strong></div><span class="change-label">modified</span></div>
+              <div class="branch" aria-hidden="true"><span></span><i></i><i></i><i></i></div>
+              <div class="surface-grid">
+                <button type="button" class="surface active" data-surface="otp" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M10 17h4M10 7h4M10 10h4"/></svg><strong>OTP login</strong><span>Direct consumer</span></button>
+                <button type="button" class="surface" data-surface="password" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg><strong>Password login</strong><span>Shared dependency</span></button>
+                <button type="button" class="surface" data-surface="guardian" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3Z"/><path d="m8 12 3 3 5-6"/></svg><strong>Guardian access</strong><span>Indirect consumer</span></button>
+              </div>
+            </div>
+            <div class="impact-detail" aria-live="polite" aria-atomic="true"><div class="detail-head"><span class="detail-kicker">WHY CHECK THIS?</span><span class="priority">HIGH PRIORITY</span></div><p id="impact-reason">OTP login calls the updated token validator. Check valid, invalid, and expired codes.</p><div class="evidence-path" id="evidence-path">validateToken → verifyOtp → /login/otp</div></div>
+            <div class="unknown-note"><span aria-hidden="true">!</span><p><strong>1 unresolved path</strong> · Dynamic permission loading needs review.</p></div>
+          </div>
+
+          <div id="verification-view" class="demo-view verification-view" hidden>
+            <div class="result-summary"><div><span class="detail-kicker">ILLUSTRATIVE OUTCOME</span><h3>Evidence, at every step.</h3></div><span class="result-badge">2 verified / 1 at risk</span></div>
+            <div class="check-result"><span class="result-icon pass" aria-hidden="true">✓</span><div><strong>OTP login</strong><span>Valid and expired-code assertions</span></div><span class="result-status pass">Verified</span></div>
+            <div class="check-result"><span class="result-icon pass" aria-hidden="true">✓</span><div><strong>Password login</strong><span>Login and session assertions</span></div><span class="result-status pass">Verified</span></div>
+            <div class="check-result"><span class="result-icon risk" aria-hidden="true">!</span><div><strong>Guardian access</strong><span>Expected access · observed HTTP 403</span></div><span class="result-status risk">At risk</span></div>
+            <div class="evidence-card"><span class="detail-kicker">REVIEWABLE EVIDENCE</span><p>Guardian access failed after a successful login.</p><div class="evidence-tags"><span>API response</span><span>Browser trace</span><span>Build revision</span></div></div>
+            <div class="unknown-note"><span aria-hidden="true">!</span><p><strong>Still not verified</strong> · The unresolved permission path needs a separate check.</p></div>
+          </div>
+          <div class="window-footer"><span>Illustrative workflow · sample data</span><span id="demo-footer-hint">Select an area to inspect its connection</span></div>
+          <noscript><p class="noscript-note">The example above shows the impact stage. Enable JavaScript to explore each area and the illustrative verification results.</p></noscript>
+        </div>
+      </div>
+      <div class="shell hero-bottom"><span>BUILT AROUND THE QUESTIONS THAT MATTER</span><div><span>What changed?</span><span>What could be affected?</span><span>What should we verify?</span></div></div>
+    </section>
+
+    <section class="problem-section" id="platform">
+      <div class="shell">
+        <div class="section-heading"><p class="eyebrow dark-eyebrow">THE CHANGE BEHIND THE CHANGE</p><h2>Your ticket tells one story.<br><span>Your code tells the rest.</span></h2><p>A shared function changes. Another screen depends on it. An API consumer sits a few calls away. The real impact rarely fits inside the ticket.</p></div>
+        <div class="problem-grid"><div class="problem-item"><span class="line-icon" aria-hidden="true">01 /</span><h3>Hidden dependencies</h3><p>See the connections that reach beyond the feature you intended to change.</p></div><div class="problem-item"><span class="line-icon" aria-hidden="true">02 /</span><h3>Unfocused regression</h3><p>Give your team a reasoned starting point for what deserves attention.</p></div><div class="problem-item"><span class="line-icon" aria-hidden="true">03 /</span><h3>Unclear release decisions</h3><p>Bring the change, the checks, and their evidence into one conversation.</p></div></div>
+      </div>
+    </section>
+
+    <section class="platform-section">
+      <div class="shell">
+        <div class="split-heading"><div><p class="eyebrow dark-eyebrow">ONE CONNECTED PLATFORM</p><h2>Understand the impact.<br>Then verify the outcome.</h2></div><p>Two connected capabilities, from the first code change to the evidence your team can act on.</p></div>
+        <div class="capabilities">
+          <article class="capability impact-capability"><div class="capability-top"><span class="step-tag">01 / INTELLIGENCE</span><span class="roadmap-tag">FIRST RELEASE FOCUS</span></div><h3>Know where to look.</h3><p>Follow changed code through its dependencies to the screens, endpoints, and flows that may need verification.</p><div class="scope-preview"><div class="scope-header"><span>RECOMMENDED ATTENTION</span><span>WHY IT MATTERS</span></div><div><strong>OTP login</strong><span>Direct change</span></div><div><strong>Password login</strong><span>Shared authentication</span></div><div><strong>Guardian access</strong><span>Session dependency</span></div><div class="scope-unknown"><strong>Dynamic permissions</strong><span>Needs investigation</span></div></div><div class="capability-foot"><span>Prioritized scope</span><span>Traceable reasons</span><span>Visible unknowns</span></div></article>
+          <article class="capability verification-capability"><div class="capability-top"><span class="step-tag">02 / VERIFICATION</span><span class="roadmap-tag">BEING BUILT ALONGSIDE</span></div><h3>Bring back the evidence.</h3><p>Turn the impact plan into focused browser and API checks in an isolated environment, with results tied to the tested build.</p><div class="run-preview"><div class="run-header"><span class="terminal-icon" aria-hidden="true">&gt;_</span><span>Planned execution workflow</span><span class="small-outline">ISOLATED RUN</span></div><div class="run-line"><span>01</span><p>Prepare the candidate build</p><span aria-hidden="true">↳</span></div><div class="run-line"><span>02</span><p>Run the approved checks</p><span aria-hidden="true">↳</span></div><div class="run-line"><span>03</span><p>Capture assertions & evidence</p><span aria-hidden="true">↳</span></div><div class="run-line"><span>04</span><p>Report results & clean up</p><span aria-hidden="true">↳</span></div></div><div class="capability-foot"><span>Browser + API</span><span>Reviewable results</span><span>Human control</span></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="workflow-section" id="workflow">
+      <div class="shell workflow-layout"><div class="workflow-intro"><p class="eyebrow">FROM CHANGE TO CLARITY</p><h2>A clear path<br>through the<br><em>“what if?”</em></h2><p>One shared thread connects what changed, why it matters, and what was actually checked.</p><a class="text-link light-link" href="#example" data-show="impact">Walk through the example <span aria-hidden="true">↗</span></a></div><ol class="workflow-steps"><li><span class="workflow-number">01</span><div><h3>Start with a code change</h3><p>Compare revisions and identify the functions, contracts, or configuration that changed.</p></div></li><li><span class="workflow-number">02</span><div><h3>Follow the meaningful connections</h3><p>Map dependencies to application areas. See the reason behind each recommendation and the gaps in the analysis.</p></div></li><li><span class="workflow-number">03</span><div><h3>Choose what to verify</h3><p>Review the suggested scope, apply your business knowledge, and select the checks that matter.</p></div></li><li><span class="workflow-number">04</span><div><h3>Make an informed release decision</h3><p>Review what passed, what failed, and what remains unverified, with evidence from the tested version.</p></div></li></ol></div>
+    </section>
+
+    <section class="approach-section" id="approach">
+      <div class="shell"><div class="section-heading"><p class="eyebrow dark-eyebrow">BUILT TO EARN YOUR TRUST</p><h2>Confidence needs<br><span>more than a green check.</span></h2></div><div class="principles"><article><svg class="principle-icon" viewBox="0 0 32 32" fill="none" aria-hidden="true"><circle cx="7" cy="9" r="3"/><circle cx="25" cy="9" r="3"/><circle cx="16" cy="25" r="3"/><path d="m9 12 5 10m9-10-5 10M10 9h12"/></svg><h3>Connections you can inspect</h3><p>Recommendations should follow traceable code relationships. AI helps explain them in application language.</p></article><article><svg class="principle-icon" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 3 28 8v8c0 7-12 13-12 13S4 23 4 16V8l12-5Z"/><path d="m11 16 3 3 7-7"/></svg><h3>Control stays with your team</h3><p>Keep the verification scope reviewable. Run approved checks in disposable environments with clear limits.</p></article><article><svg class="principle-icon" viewBox="0 0 32 32" fill="none" aria-hidden="true"><circle cx="16" cy="16" r="12"/><path d="M16 9v9m0 4v1"/></svg><h3>Unknown means unknown</h3><p>An unresolved dependency or an unrun check stays visible. An absence of findings is never proof of safety.</p></article></div></div>
+    </section>
+
+    <section class="team-section"><div class="shell team-layout"><div><p class="eyebrow dark-eyebrow">SHARED CONTEXT. BETTER DECISIONS.</p><h2>Built for everyone<br>behind the release.</h2></div><div class="team-roles"><div><h3>QA & test engineers</h3><p>A focused list of what deserves verification, with clear reasons.</p></div><div><h3>Developers & tech leads</h3><p>A view of the dependencies that connect your change to the rest of the application.</p></div><div><h3>Product & release teams</h3><p>A shared understanding of what was checked and what remains uncertain.</p></div></div></div></section>
+
+    <section class="faq-section"><div class="shell faq-layout"><div><p class="eyebrow dark-eyebrow">A FEW GOOD QUESTIONS</p><h2>The details<br>that matter.</h2></div><div class="faq-list"><details><summary>Is Graphentra available today?<span aria-hidden="true">+</span></summary><p>Graphentra is in development. The first release focuses on explainable change-impact analysis. Isolated browser and API verification is being built alongside it. The example on this page illustrates the intended experience.</p></details><details><summary>Do we need an existing test suite?<span aria-hidden="true">+</span></summary><p>The impact-analysis experience is designed to provide a useful verification scope even when you rely on manual QA. Automated execution will use supported existing tests and approved scenarios where available. Missing checks remain explicitly unverified.</p></details><details><summary>Does an affected area mean a bug exists?<span aria-hidden="true">+</span></summary><p>No. It means there is a connection to changed code that may deserve attention. Tests and human review establish whether the observed behavior matches the expected behavior.</p></details><details><summary>Which technologies will be supported first?<span aria-hidden="true">+</span></summary><p>The initial focus is TypeScript and JavaScript applications, with framework support introduced in stages. Browser verification is planned around Playwright, alongside API checks and adapters for test runners such as pytest. Broader language support is part of the longer-term architecture.</p></details><details><summary>How will automated verification stay isolated?<span aria-hidden="true">+</span></summary><p>The planned execution layer uses disposable test environments, scoped credentials, approved actions, and run limits. Test results will identify the build and environment used. Production systems are outside the initial execution scope.</p></details></div></div></section>
+
+    <section class="closing-section"><div class="shell closing-inner"><p class="eyebrow">GRAPHENTRA · IN DEVELOPMENT</p><h2>Every change has a story.<br><em>See where it leads.</em></h2><p>From hidden dependencies to focused verification.<br>A clearer picture for your next release.</p><a class="button button-dark" href="#example" data-show="impact">Explore the product concept <span aria-hidden="true">↗</span></a></div></section>
+  </main>
+  <footer class="site-footer"><div class="shell"><div class="footer-top"><a class="brand" href="#top"><img src="mark.svg" width="28" height="28" alt=""><span>graphentra</span></a><p>Change intelligence. Focused verification.</p><a href="#top" class="back-top">Back to top <span aria-hidden="true">↑</span></a></div><div class="footer-bottom"><span>© 2026 Graphentra</span><span>Graphentra.com</span><span>Built around evidence.</span></div></div></footer>
+</body>
+</html>
