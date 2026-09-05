@@ -22,10 +22,10 @@
       <nav class="desktop-nav" aria-label="Main navigation">
         <a href="#platform">Platform</a><a href="#workflow">How it works</a><a href="#approach">Our approach</a>
       </nav>
-      <a class="header-cta" href="#example">Explore a change <span aria-hidden="true">↗</span></a>
+      <a class="header-cta" href="#early-access">Request Early Access <span aria-hidden="true">↘</span></a>
       <button class="menu-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-nav"><span></span><span></span></button>
     </div>
-    <nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation" hidden><a href="#platform">Platform</a><a href="#workflow">How it works</a><a href="#approach">Our approach</a><a href="#example">Explore a change ↗</a></nav>
+    <nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation" hidden><a href="#platform">Platform</a><a href="#workflow">How it works</a><a href="#approach">Our approach</a><a href="#early-access">Request Early Access ↘</a></nav>
   </header>
 
   <main id="main">
@@ -35,7 +35,7 @@
           <div class="eyebrow"><span class="tiny-mark" aria-hidden="true">✳</span> CLARITY BETWEEN CODE & RELEASE</div>
           <h1>A small change.<br>A bigger picture.<br><em>Now connected.</em></h1>
           <p class="hero-description">Know what your code change touches. Focus on what needs checking. Move toward your next release with evidence.</p>
-          <div class="hero-actions"><a class="button button-lime" href="#example">Explore the workflow <span aria-hidden="true">↗</span></a><a class="text-link" href="#platform">Meet Graphentra <span aria-hidden="true">↓</span></a></div>
+          <div class="hero-actions"><a class="button button-lime" href="#early-access">Request Early Access <span aria-hidden="true">↘</span></a><a class="text-link" href="#early-access" data-interest="Paid pilot">Discuss a Pilot <span aria-hidden="true">↓</span></a></div>
           <div class="stage-note"><span class="stage-pill">IN DEVELOPMENT</span><span>Change intelligence first. Verification next.</span></div>
         </div>
 
@@ -103,6 +103,99 @@
     <section class="faq-section"><div class="shell faq-layout"><div><p class="eyebrow dark-eyebrow">A FEW GOOD QUESTIONS</p><h2>The details<br>that matter.</h2></div><div class="faq-list"><details><summary>Is Graphentra available today?<span aria-hidden="true">+</span></summary><p>Graphentra is in development. The first release focuses on explainable change-impact analysis. Isolated browser and API verification is being built alongside it. The example on this page illustrates the intended experience.</p></details><details><summary>Do we need an existing test suite?<span aria-hidden="true">+</span></summary><p>The impact-analysis experience is designed to provide a useful verification scope even when you rely on manual QA. Automated execution will use supported existing tests and approved scenarios where available. Missing checks remain explicitly unverified.</p></details><details><summary>Does an affected area mean a bug exists?<span aria-hidden="true">+</span></summary><p>No. It means there is a connection to changed code that may deserve attention. Tests and human review establish whether the observed behavior matches the expected behavior.</p></details><details><summary>Which technologies will be supported first?<span aria-hidden="true">+</span></summary><p>The initial focus is TypeScript and JavaScript applications, with framework support introduced in stages. Browser verification is planned around Playwright, alongside API checks and adapters for test runners such as pytest. Broader language support is part of the longer-term architecture.</p></details><details><summary>How will automated verification stay isolated?<span aria-hidden="true">+</span></summary><p>The planned execution layer uses disposable test environments, scoped credentials, approved actions, and run limits. Test results will identify the build and environment used. Production systems are outside the initial execution scope.</p></details></div></div></section>
 
     <section class="closing-section"><div class="shell closing-inner"><p class="eyebrow">GRAPHENTRA · IN DEVELOPMENT</p><h2>Every change has a story.<br><em>See where it leads.</em></h2><p>From hidden dependencies to focused verification.<br>A clearer picture for your next release.</p><a class="button button-dark" href="#example" data-show="impact">Explore the product concept <span aria-hidden="true">↗</span></a></div></section>
+
+    <section class="early-access-section" id="early-access" aria-labelledby="early-access-heading">
+      <div class="shell early-access-layout">
+        <div class="early-access-copy">
+          <p class="eyebrow"><span class="tiny-mark" aria-hidden="true">✳</span> EARLY ACCESS</p>
+          <h2 id="early-access-heading">Help shape Graphentra</h2>
+          <p class="early-access-description">Graphentra is being built for QA and engineering teams that want to understand which application areas may be affected by a code change. Tell us how your team currently plans regression testing, and we’ll contact you about relevant early-access and pilot opportunities.</p>
+          <ul class="early-access-benefits" aria-label="Early-access benefits">
+            <li><span aria-hidden="true">01 /</span> See early product demonstrations</li>
+            <li><span aria-hidden="true">02 /</span> Help shape the change-impact workflow</li>
+            <li><span aria-hidden="true">03 /</span> Explore a pilot using realistic change scenarios</li>
+          </ul>
+          <p class="privacy-note"><span aria-hidden="true">◎</span> No spam. We’ll only contact you about Graphentra and relevant early-access opportunities.</p>
+        </div>
+
+        <div class="lead-form-panel">
+          <div id="lead-form-content">
+            <div class="form-intro"><span>YOUR TEAM &amp; WORKFLOW</span><p>All fields are required.</p></div>
+            <form id="early-access-form" action="/api/leads" method="post" novalidate>
+              <div class="form-grid">
+                <div class="form-field">
+                  <label for="lead-name">Full name</label>
+                  <input id="lead-name" name="name" type="text" placeholder="Your full name" autocomplete="name" maxlength="120" required aria-describedby="name-error">
+                  <p class="field-error" id="name-error"></p>
+                </div>
+                <div class="form-field">
+                  <label for="lead-email">Work email</label>
+                  <input id="lead-email" name="email" type="email" placeholder="you@company.com" autocomplete="email" maxlength="254" required aria-describedby="email-error">
+                  <p class="field-error" id="email-error"></p>
+                </div>
+                <div class="form-field">
+                  <label for="lead-company">Company name</label>
+                  <input id="lead-company" name="company" type="text" placeholder="Your company" autocomplete="organization" maxlength="160" required aria-describedby="company-error">
+                  <p class="field-error" id="company-error"></p>
+                </div>
+                <div class="form-field">
+                  <label for="lead-role">Role</label>
+                  <select id="lead-role" name="role" required aria-describedby="role-error">
+                    <option value="">Select your role</option>
+                    <option>QA Engineer</option>
+                    <option>QA Lead or Manager</option>
+                    <option>Engineering Manager</option>
+                    <option>Developer or Tech Lead</option>
+                    <option>Head or VP of Engineering</option>
+                    <option>Founder or CTO</option>
+                    <option>Product or Release Manager</option>
+                    <option>Other</option>
+                  </select>
+                  <p class="field-error" id="role-error"></p>
+                </div>
+                <div class="form-field form-field-wide">
+                  <label for="lead-challenge">What is your biggest regression-testing challenge?</label>
+                  <textarea id="lead-challenge" name="challenge" placeholder="Tell us how your team currently decides what to verify after a code change." minlength="20" maxlength="1000" rows="5" required aria-describedby="challenge-help challenge-error"></textarea>
+                  <div class="field-meta" id="challenge-help"><span>Minimum 20 characters</span><span id="challenge-count">0 / 1,000</span></div>
+                  <p class="field-error" id="challenge-error"></p>
+                </div>
+              </div>
+
+              <fieldset class="interest-fieldset" aria-describedby="interest-error">
+                <legend>What are you interested in?</legend>
+                <div class="interest-options">
+                  <label><input type="radio" name="interest" value="Product updates" required><span>Product updates</span></label>
+                  <label><input type="radio" name="interest" value="Early access" checked><span>Early access</span></label>
+                  <label><input type="radio" name="interest" value="Design partnership"><span>Design partnership</span></label>
+                  <label><input type="radio" name="interest" value="Paid pilot"><span>Paid pilot</span></label>
+                </div>
+                <p class="field-error" id="interest-error"></p>
+              </fieldset>
+
+              <div class="honeypot-field" aria-hidden="true">
+                <label for="lead-website">Website</label>
+                <input id="lead-website" name="website" type="text" tabindex="-1" autocomplete="off">
+              </div>
+
+              <div class="consent-field">
+                <input id="lead-consent" name="consent" type="checkbox" required aria-describedby="consent-error">
+                <div><label for="lead-consent">I agree that Graphentra may contact me about early access, product updates and pilot opportunities.</label><p class="field-error" id="consent-error"></p></div>
+              </div>
+
+              <div id="form-status" class="form-status" role="alert" aria-live="assertive" tabindex="-1" hidden>We couldn’t submit your request. Please try again or contact us directly.</div>
+              <button id="lead-submit" class="button button-lime form-submit" type="submit">Request Early Access <span aria-hidden="true">↗</span></button>
+            </form>
+          </div>
+
+          <div id="lead-success" class="lead-success" role="status" aria-live="polite" tabindex="-1" hidden>
+            <span class="success-mark" aria-hidden="true">✓</span>
+            <p class="detail-kicker">REQUEST RECEIVED</p>
+            <h3>Thank you for your interest in Graphentra</h3>
+            <p>We’re currently speaking with QA and engineering teams about how they plan regression testing after code changes. We’ll review your submission and contact you about relevant early-access or pilot opportunities.</p>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
   <footer class="site-footer"><div class="shell"><div class="footer-top"><a class="brand" href="#top"><img src="mark.svg" width="28" height="28" alt=""><span>graphentra</span></a><p>Change intelligence. Focused verification.</p><a href="#top" class="back-top">Back to top <span aria-hidden="true">↑</span></a></div><div class="footer-bottom"><span>© 2026 Graphentra</span><span>Graphentra.com</span><span>Built around evidence.</span></div></div></footer>
 </body>
