@@ -109,7 +109,8 @@ test('persists a valid lead with normalized email, consent, and attribution', as
   assert.equal(lead.submission_id, validPayload().submission_id);
   assert.equal(lead.email, 'ada@example.com');
   assert.equal(lead.consent_given, 1);
-  assert.match(lead.consented_at, /^2026-09-05/);
+  assert.match(lead.consented_at, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/);
+  assert.equal(Number.isNaN(Date.parse(lead.consented_at)), false);
   assert.equal(lead.utm_campaign, 'early-access');
   assert.equal(lead.referrer, 'https://example.com/article');
   assert.equal(lead.source, 'website');
@@ -239,15 +240,17 @@ test('rejects a request that exceeds the size limit', async () => {
   assert.equal(res.status, 413);
 });
 
-test('homepage includes accessible form contracts and the D1 migration covers leads and rate limits', () => {
-  const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-  const script = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+test('Astro homepage sources include accessible form contracts and the D1 migration covers leads and rate limits', () => {
+  const form = fs.readFileSync(path.join(root, 'src/components/EarlyAccess.astro'), 'utf8');
+  const hero = fs.readFileSync(path.join(root, 'src/components/Hero.astro'), 'utf8');
+  const script = fs.readFileSync(path.join(root, 'src/scripts/lead-form.ts'), 'utf8');
   const migration = fs.readFileSync(path.join(root, 'migrations/0001_create_leads.sql'), 'utf8');
   const worker = fs.readFileSync(path.join(root, 'worker/index.js'), 'utf8');
-  assert.match(html, /id="early-access"/);
-  assert.match(html, /href="#early-access" data-interest="Paid pilot"/);
-  assert.match(html, /id="lead-challenge"[\s\S]*?minlength="20" maxlength="1000"/);
-  assert.match(html, /id="lead-consent"[\s\S]*?required/);
+  assert.match(form, /id="early-access"/);
+  assert.match(form, /id="early-access-form" action="\/api\/leads"/);
+  assert.match(hero, /href="#early-access" data-interest="Paid pilot"/);
+  assert.match(form, /id="lead-challenge"[\s\S]*?minlength="20" maxlength="1000"/);
+  assert.match(form, /id="lead-consent"[^>]*required/);
   assert.match(script, /URLSearchParams\(window\.location\.search\)/);
   assert.match(script, /paidPilot\.checked = true/);
   assert.match(script, /submitting \|\| !validateForm\(\)/);

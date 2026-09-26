@@ -1,0 +1,578 @@
+---
+import Kicker from './Kicker.astro';
+import Icon from './Icon.astro';
+
+const attention = [
+  { name: 'OTP login', weight: 1, why: 'Direct change' },
+  { name: 'Guardian access', weight: 0.86, why: 'Session dependency' },
+  { name: 'Password login', weight: 0.58, why: 'Shared authentication' }
+];
+
+const runLines = [
+  { time: '00:00', text: 'Prepare the candidate build', result: 'a3f9c21' },
+  { time: '00:42', text: 'Run the approved checks', result: '3 checks' },
+  { time: '01:58', text: 'Capture assertions & evidence', result: '7 artifacts' },
+  { time: '02:06', text: 'Report results & clean up', result: 'env removed' }
+];
+---
+
+<section class="section platform" id="product" aria-labelledby="platform-title">
+  <div class="container">
+    <div class="platform-head">
+      <div>
+        <Kicker index="03" label="One connected platform" />
+        <h2 class="display h-section" id="platform-title" data-split>Understand the impact. <em>Then prove the outcome.</em></h2>
+      </div>
+      <p class="lede" data-reveal>Two connected capabilities — from the first code change to evidence your team can act on.</p>
+    </div>
+
+    <div class="bento">
+      <article class="card card-impact" data-spot data-reveal>
+        <div class="card-top">
+          <span class="card-index">01 — Intelligence</span>
+          <span class="chip chip-signal">First release focus</span>
+        </div>
+        <h3 class="card-title display">Know where <em>to look.</em></h3>
+        <p class="body-copy card-copy">Follow changed code through its dependencies to the screens, endpoints and flows that may need verification.</p>
+
+        <div class="attention" data-attention>
+          <div class="att-head label">
+            <span>Recommended attention</span>
+            <span>Why it matters</span>
+          </div>
+          {
+            attention.map(item => (
+              <div class="att-row" style={`--v:${item.weight}`}>
+                <span class="att-name">{item.name}</span>
+                <span class="att-bar" aria-hidden="true">
+                  <i></i>
+                </span>
+                <span class="att-why">{item.why}</span>
+              </div>
+            ))
+          }
+          <div class="att-row is-unknown">
+            <span class="att-name">Dynamic permissions</span>
+            <span class="att-bar is-unknown" aria-hidden="true"><i></i></span>
+            <span class="att-why">Needs investigation</span>
+          </div>
+        </div>
+
+        <ul class="card-foot" role="list">
+          <li>Prioritized scope</li>
+          <li>Traceable reasons</li>
+          <li>Visible unknowns</li>
+        </ul>
+      </article>
+
+      <article class="card card-verify on-night" data-spot data-reveal>
+        <div class="card-top">
+          <span class="card-index">02 — Verification</span>
+          <span class="chip chip-night">Being built alongside</span>
+        </div>
+        <h3 class="card-title display">Bring back <em>the evidence.</em></h3>
+        <p class="card-copy">Turn the impact plan into focused browser and API checks in an isolated environment, with results tied to the tested build.</p>
+
+        <div class="terminal" data-terminal>
+          <div class="term-head">
+            <span>Planned execution workflow</span>
+            <span class="term-flag">Illustrative</span>
+          </div>
+          <ol class="term-lines" role="list">
+            {
+              runLines.map((line, index) => (
+                <li class="term-line" data-term-line>
+                  <span class="t-time">{line.time}</span>
+                  <span class="t-step">{String(index + 1).padStart(2, '0')}</span>
+                  <span class="t-text">{line.text}</span>
+                  <span class="t-result">{line.result}</span>
+                </li>
+              ))
+            }
+          </ol>
+        </div>
+
+        <ul class="card-foot" role="list">
+          <li>Browser + API</li>
+          <li>Reviewable results</li>
+          <li>Human control</li>
+        </ul>
+      </article>
+
+      <article class="card card-mini" data-spot data-reveal>
+        <span class="mini-icon"><Icon name="browser" size={22} /></span>
+        <h3 class="mini-title">Browser &amp; API checks</h3>
+        <p class="body-copy">Browser verification is planned around Playwright, alongside API checks and adapters for runners such as pytest.</p>
+        <div class="mini-tags mono" aria-label="Planned tooling">
+          <span>playwright</span>
+          <span>http api</span>
+          <span>pytest</span>
+        </div>
+      </article>
+
+      <article class="card card-mini" data-spot data-reveal>
+        <span class="mini-icon"><Icon name="box" size={22} /></span>
+        <h3 class="mini-title">Isolated by design</h3>
+        <p class="body-copy">Disposable environments, scoped credentials, approved actions and run limits. Production systems are outside the initial scope.</p>
+        <div class="sandbox" aria-hidden="true">
+          <span class="sandbox-box"><span class="sandbox-dot"></span>ephemeral env</span>
+          <span class="sandbox-wall">production</span>
+        </div>
+      </article>
+
+      <article class="card card-mini" data-spot data-reveal>
+        <span class="mini-icon"><Icon name="stamp" size={22} /></span>
+        <h3 class="mini-title">Evidence tied to the build</h3>
+        <p class="body-copy">Every result names the build and environment it was observed in, so a green check means something specific.</p>
+        <div class="stamp mono" aria-hidden="true">
+          <span>build</span><b>a3f9c21</b><span>env</span><b>eph-07</b>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<style>
+  .platform {
+    background: var(--paper-2);
+    border-block: 1px solid var(--line);
+  }
+
+  .platform-head {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    align-items: end;
+    gap: 28px clamp(32px, 6vw, 96px);
+    margin-bottom: clamp(48px, 6vw, 80px);
+  }
+
+  .platform-head :global(.kicker) {
+    margin-bottom: clamp(22px, 2.6vw, 32px);
+  }
+
+  .platform-head .h-section {
+    max-width: 14ch;
+  }
+
+  .bento {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .card {
+    --mx: 50%;
+    --my: 50%;
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: clamp(22px, 2.4vw, 34px);
+    border-radius: var(--r-xl);
+    background: var(--card);
+    box-shadow: 0 0 0 1px var(--line);
+    overflow: hidden;
+  }
+
+  /* Pointer spotlight */
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(420px circle at var(--mx) var(--my), rgb(35 64 255 / 0.09), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  .card:hover::before {
+    opacity: 1;
+  }
+
+  .card-impact {
+    grid-column: span 7;
+  }
+
+  .card-verify {
+    grid-column: span 5;
+    background: var(--night);
+    color: var(--night-text);
+    box-shadow: none;
+  }
+
+  .card-verify::before {
+    background: radial-gradient(420px circle at var(--mx) var(--my), rgb(143 156 255 / 0.16), transparent 60%);
+  }
+
+  .card-mini {
+    grid-column: span 4;
+  }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .card-index {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .card-verify .card-index {
+    color: var(--night-muted);
+  }
+
+  .chip-signal {
+    color: var(--signal-deep);
+    background: var(--signal-soft);
+    box-shadow: none;
+  }
+
+  .chip-night {
+    color: var(--night-muted);
+    box-shadow: inset 0 0 0 1px var(--night-line-2);
+  }
+
+  .card-title {
+    margin-top: clamp(12px, 2vw, 28px);
+    font-size: clamp(2.1rem, 3.4vw, 3.3rem);
+    line-height: 1;
+  }
+
+  .card-verify .card-title :global(em),
+  .card-verify .card-title em {
+    color: var(--signal-night);
+  }
+
+  .card-copy {
+    max-width: 30rem;
+  }
+
+  .card-verify .card-copy {
+    color: var(--night-muted);
+  }
+
+  .card-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin-top: auto;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    font-size: 0.84rem;
+    color: var(--ink-3);
+  }
+
+  .card-foot li {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-foot li::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 2px;
+    background: var(--signal);
+  }
+
+  .card-verify .card-foot {
+    border-color: var(--night-line);
+    color: var(--night-muted);
+  }
+
+  .card-verify .card-foot li::before {
+    background: var(--signal-night);
+  }
+
+  /* Attention table */
+  .attention {
+    margin-block: 10px 6px;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--line);
+    padding: 4px 18px;
+  }
+
+  .att-head {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0 10px;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.68rem;
+  }
+
+  .att-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(60px, 0.9fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 18px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.9rem;
+  }
+
+  .att-row:last-child {
+    border-bottom: 0;
+  }
+
+  .att-name {
+    font-weight: 580;
+  }
+
+  .att-why {
+    text-align: right;
+    color: var(--muted);
+    font-size: 0.84rem;
+  }
+
+  .att-bar {
+    position: relative;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--paper-2);
+    overflow: hidden;
+  }
+
+  .att-bar i {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--signal);
+    transform-origin: left center;
+    transform: scaleX(var(--v));
+  }
+
+  .att-bar.is-unknown {
+    background: repeating-linear-gradient(90deg, rgb(227 162 50 / 0.55) 0 4px, transparent 4px 8px);
+  }
+
+  .att-bar.is-unknown i {
+    display: none;
+  }
+
+  .att-row.is-unknown .att-name,
+  .att-row.is-unknown .att-why {
+    color: var(--caution);
+  }
+
+  /* Terminal */
+  .terminal {
+    margin-block: 10px 6px;
+    border-radius: 14px;
+    background: var(--night-2);
+    box-shadow: inset 0 0 0 1px var(--night-line);
+    padding: 6px 16px 10px;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+  }
+
+  .term-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--night-line);
+    color: var(--night-muted);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .term-flag {
+    color: var(--caution-night);
+  }
+
+  .term-line {
+    display: grid;
+    grid-template-columns: auto auto 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px dashed var(--night-line);
+  }
+
+  .term-line:last-child {
+    border-bottom: 0;
+  }
+
+  .t-time {
+    color: rgb(237 234 227 / 0.35);
+  }
+
+  .t-step {
+    color: var(--signal-night);
+  }
+
+  .t-text {
+    color: var(--night-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .t-result {
+    color: var(--pass-night);
+  }
+
+  /* Mini cards */
+  .mini-icon {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--line);
+    color: var(--signal);
+  }
+
+  .mini-title {
+    margin-top: 8px;
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .mini-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: auto;
+    padding-top: 6px;
+  }
+
+  .mini-tags span {
+    padding: 5px 10px;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--line);
+    font-size: 0.72rem;
+    color: var(--ink-3);
+  }
+
+  .sandbox {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+  }
+
+  .sandbox-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1.5px dashed var(--signal);
+    color: var(--signal-deep);
+    background: var(--signal-tint);
+  }
+
+  .sandbox-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--signal);
+  }
+
+  .sandbox-wall {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: var(--muted);
+    background: repeating-linear-gradient(-45deg, var(--paper-2) 0 6px, transparent 6px 12px);
+    box-shadow: 0 0 0 1px var(--line);
+    text-decoration: line-through;
+    text-decoration-color: var(--line-2);
+  }
+
+  .stamp {
+    display: grid;
+    grid-template-columns: auto 1fr auto 1fr;
+    align-items: center;
+    gap: 8px 10px;
+    margin-top: auto;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--ink);
+    color: var(--night-muted);
+    font-size: 0.72rem;
+  }
+
+  .stamp b {
+    font-weight: 500;
+    color: var(--night-text);
+  }
+
+  @media (max-width: 1080px) {
+    .platform-head {
+      grid-template-columns: 1fr;
+    }
+
+    .card-impact,
+    .card-verify {
+      grid-column: span 12;
+    }
+
+    .card-mini {
+      grid-column: span 6;
+    }
+
+    .card-mini:last-child {
+      grid-column: span 12;
+    }
+  }
+
+  @media (max-width: 680px) {
+    .card-mini,
+    .card-mini:last-child {
+      grid-column: span 12;
+    }
+
+    .att-row {
+      grid-template-columns: 1fr auto;
+      grid-template-areas:
+        'name why'
+        'bar bar';
+      row-gap: 8px;
+    }
+
+    .att-name {
+      grid-area: name;
+    }
+
+    .att-why {
+      grid-area: why;
+    }
+
+    .att-bar {
+      grid-area: bar;
+    }
+
+    .term-line {
+      grid-template-columns: auto 1fr;
+      row-gap: 2px;
+    }
+
+    .t-time {
+      display: none;
+    }
+
+    .t-result {
+      grid-column: 2;
+    }
+  }
+</style>

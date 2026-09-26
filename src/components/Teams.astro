@@ -1,0 +1,147 @@
+---
+import Kicker from './Kicker.astro';
+
+const teams = [
+  {
+    role: 'QA & test engineers',
+    question: 'What should we test for this release?',
+    answer: 'A focused list of what deserves verification, with clear reasons attached to every item.'
+  },
+  {
+    role: 'Developers & tech leads',
+    question: 'What else did my change touch?',
+    answer: 'A view of the dependencies that connect your change to the rest of the application.'
+  },
+  {
+    role: 'Product & release teams',
+    question: 'Are we confident enough to ship?',
+    answer: 'A shared understanding of what was checked — and what still remains uncertain.'
+  }
+];
+---
+
+<section class="section teams" id="teams" aria-labelledby="teams-title">
+  <div class="container">
+    <div class="teams-head">
+      <Kicker index="05" label="Shared context" />
+      <h2 class="display h-section" id="teams-title" data-split>Built for everyone <em>behind the release.</em></h2>
+    </div>
+
+    <div class="teams-grid">
+      {
+        teams.map((team, index) => (
+          <article class="team" data-reveal>
+            <div class="team-top">
+              <span class="team-index mono">{String(index + 1).padStart(2, '0')}</span>
+              <h3 class="team-role">{team.role}</h3>
+            </div>
+            <p class="team-question display"><span aria-hidden="true">“</span>{team.question}<span aria-hidden="true">”</span></p>
+            <p class="team-answer">
+              <span class="label">Graphentra gives you</span>
+              {team.answer}
+            </p>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .teams-head {
+    display: grid;
+    gap: clamp(22px, 2.6vw, 32px);
+    margin-bottom: clamp(48px, 6vw, 88px);
+  }
+
+  .teams-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-top: 1px solid var(--ink);
+  }
+
+  .team {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(28px, 4vw, 56px);
+    padding: 26px clamp(18px, 2.4vw, 36px) 34px 0;
+  }
+
+  .team + .team {
+    padding-left: clamp(18px, 2.4vw, 36px);
+    border-left: 1px solid var(--line);
+  }
+
+  .team::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -1px;
+    height: 3px;
+    background: var(--signal);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.7s var(--ease-out);
+  }
+
+  .team:hover::after {
+    transform: scaleX(1);
+  }
+
+  .team-top {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+  }
+
+  .team-index {
+    font-size: 0.75rem;
+    color: var(--signal);
+  }
+
+  .team-role {
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+
+  .team-question {
+    font-size: clamp(1.9rem, 2.8vw, 2.75rem);
+    font-style: italic;
+    font-weight: 340;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    text-indent: -0.4em;
+    transition: color 0.5s ease;
+  }
+
+  .team:hover .team-question {
+    color: var(--signal);
+  }
+
+  .team-answer {
+    display: grid;
+    gap: 10px;
+    margin-top: auto;
+    color: var(--ink-3);
+    max-width: 24rem;
+  }
+
+  @media (max-width: 900px) {
+    .teams-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .team,
+    .team + .team {
+      padding: 26px 0 32px;
+      border-left: 0;
+    }
+
+    .team + .team {
+      border-top: 1px solid var(--line);
+    }
+  }
+</style>

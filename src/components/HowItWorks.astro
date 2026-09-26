@@ -1,0 +1,1174 @@
+---
+import Kicker from './Kicker.astro';
+import Icon from './Icon.astro';
+
+const steps = [
+  {
+    title: 'Start with the change',
+    body: 'Compare revisions and pinpoint the functions, contracts and configuration that actually changed — at the level of symbols, not just files.',
+    points: ['Revision-to-revision comparison', 'Symbol-level detail']
+  },
+  {
+    title: 'Follow what it reaches',
+    body: 'Map dependencies to real application areas. Every recommendation carries its reason, and every gap in the analysis stays visible.',
+    points: ['Traceable paths', 'Unknowns shown, never hidden']
+  },
+  {
+    title: 'Choose what to verify',
+    body: 'Review the suggested scope, add what only your team knows, and approve the checks that matter. Nothing runs without you.',
+    points: ['Human-approved scope', 'Your business knowledge counts']
+  },
+  {
+    title: 'Decide with evidence',
+    body: 'See what passed, what failed and what is still unverified — each result tied to the exact build you tested.',
+    points: ['Results tied to a build', 'Unverified stays unverified']
+  }
+];
+
+const diff = [
+  { n: '9', type: 'ctx', indent: 0, html: '<span class="k">import</span> { jwt, SECRET, AUDIENCE } <span class="k">from</span> <span class="s">\'./config\'</span>' },
+  { n: '10', type: 'ctx', indent: 0, html: '' },
+  { n: '11', type: 'ctx', indent: 0, html: '<span class="k">export function</span> <span class="f">validateToken</span>(token: <span class="t">string</span>) {' },
+  { n: '12', type: 'del', indent: 1, html: '<span class="k">return</span> jwt.<span class="f">verify</span>(token, SECRET)' },
+  { n: '12', type: 'add', indent: 1, html: '<span class="k">const</span> claims = jwt.<span class="f">verify</span>(token, SECRET, { clockTolerance: <span class="n">30</span> })' },
+  { n: '13', type: 'add', indent: 1, html: '<span class="k">if</span> (claims.aud !== AUDIENCE) <span class="k">throw new</span> <span class="f">TokenError</span>(<span class="s">\'audience\'</span>)' },
+  { n: '14', type: 'add', indent: 1, html: '<span class="k">return</span> claims' },
+  { n: '15', type: 'ctx', indent: 0, html: '}' }
+];
+
+const trace = [
+  { fn: 'verifyOtp()', area: 'OTP login', route: '/login/otp', why: 'Direct' },
+  { fn: 'passwordLogin()', area: 'Password login', route: '/login', why: 'Shared' },
+  { fn: 'sessionMiddleware', area: 'Guardian access', route: '/guardian/children', why: 'Indirect' }
+];
+
+const scope = [
+  { name: 'OTP login', priority: 'High', what: 'Valid, invalid and expired codes' },
+  { name: 'Guardian access', priority: 'High', what: 'Access after login and after session expiry' },
+  { name: 'Password login', priority: 'Medium', what: 'A valid login still creates a working session' }
+];
+
+const results = [
+  { name: 'OTP login', detail: '3 of 3 assertions', status: 'Verified', kind: 'pass' },
+  { name: 'Password login', detail: '2 of 2 assertions', status: 'Verified', kind: 'pass' },
+  { name: 'Guardian access', detail: 'Expected 200 · observed 403', status: 'At risk', kind: 'risk' },
+  { name: 'Dynamic permissions', detail: 'Outside the approved scope', status: 'Not verified', kind: 'unverified' }
+];
+---
+
+<section class="section how" id="how" aria-labelledby="how-title" data-how>
+  <div class="container">
+    <div class="how-head">
+      <Kicker index="02" label="From change to clarity" />
+      <h2 class="display h-section" id="how-title" data-split>One thread from <em>diff</em> to <em>decision.</em></h2>
+      <p class="lede" data-reveal>A single, reviewable path connects what changed, why it matters, and what was actually checked.</p>
+    </div>
+
+    <div class="how-grid">
+      <div class="how-rail" aria-hidden="true"><span data-how-progress></span></div>
+
+      {
+        steps.map((step, index) => (
+          <div class="how-step" style={`--row:${index + 1}`}>
+            <div class="how-copy" data-step-copy={index}>
+              <div class="how-copy-inner">
+                <span class="how-num mono" aria-hidden="true">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <p class="label how-step-label">Step {index + 1} of 4</p>
+                <h3 class="how-title">{step.title}</h3>
+                <p class="body-copy how-body">{step.body}</p>
+                <ul class="how-points" role="list">
+                  {step.points.map(point => (
+                    <li>
+                      <Icon name="check" size={14} />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div class="how-panel" data-panel={index}>
+              <div class="app">
+                <div class="app-bar">
+                  <span class="app-title">
+                    <Icon name="branch" size={14} />
+                    <span>
+                      PR #482 <span class="app-sep">·</span> Update shared authentication
+                    </span>
+                  </span>
+                  <span class="app-steps" aria-hidden="true">
+                    {steps.map((_, dot) => (
+                      <i class:list={[{ 'is-on': dot === index, 'is-past': dot < index }]} />
+                    ))}
+                  </span>
+                </div>
+
+                <div class="app-body">
+                  {index === 0 && (
+                    <>
+                      <div class="p-toolbar" data-seq>
+                        <span class="p-file mono">auth/token.ts</span>
+                        <span class="p-diffstat mono">
+                          <span class="add">+3</span> <span class="del">−1</span>
+                        </span>
+                      </div>
+                      <div class="code mono" role="img" aria-label="Diff of validateToken in auth/token.ts: it now allows 30 seconds of clock tolerance and rejects tokens with the wrong audience.">
+                        {diff.map(line => (
+                          <div class:list={['cl', `cl-${line.type}`]} style={`--indent:${line.indent}`} data-seq>
+                            <span class="ln">{line.n}</span>
+                            <span class="sg">{line.type === 'add' ? '+' : line.type === 'del' ? '−' : ''}</span>
+                            <span class="cx" set:html={line.html} />
+                          </div>
+                        ))}
+                      </div>
+                      <div class="findings">
+                        <p class="label">Detected</p>
+                        <ul role="list">
+                          <li data-seq>
+                            <span class="fdot is-signal" />1 function changed · <code>validateToken()</code>
+                          </li>
+                          <li data-seq>
+                            <span class="fdot" />Signature unchanged
+                          </li>
+                          <li data-seq>
+                            <span class="fdot is-signal" />Behaviour changed · new audience check
+                          </li>
+                        </ul>
+                      </div>
+                    </>
+                  )}
+
+                  {index === 1 && (
+                    <>
+                      <div class="p-toolbar" data-seq>
+                        <span class="p-origin mono">
+                          <span class="origin-dot" />
+                          validateToken()
+                        </span>
+                        <span class="chip chip-night is-signal">Changed</span>
+                      </div>
+                      <ol class="trace" role="list">
+                        {trace.map(row => (
+                          <li class="trace-row" data-seq>
+                            <span class="trace-fn mono">{row.fn}</span>
+                            <span class="trace-line" data-line />
+                            <span class="trace-area">
+                              <span class="trace-area-name">{row.area}</span>
+                              <span class="trace-route mono">{row.route}</span>
+                            </span>
+                            <span class="trace-why">{row.why}</span>
+                          </li>
+                        ))}
+                        <li class="trace-row is-unknown" data-seq>
+                          <span class="trace-fn mono">loadPermissions()</span>
+                          <span class="trace-line" data-line />
+                          <span class="trace-area">
+                            <span class="trace-area-name">Unresolved</span>
+                            <span class="trace-route mono">dynamic import</span>
+                          </span>
+                          <span class="trace-why">Review</span>
+                        </li>
+                      </ol>
+                      <p class="p-note" data-seq>
+                        4 paths found <span class="app-sep">·</span> 3 reach application areas <span class="app-sep">·</span> <span class="is-caution">1 needs review</span>
+                      </p>
+                    </>
+                  )}
+
+                  {index === 2 && (
+                    <>
+                      <div class="p-toolbar" data-seq>
+                        <span>Suggested verification scope</span>
+                        <span class="mono p-count">3 of 4 selected</span>
+                      </div>
+                      <ul class="scope" role="list">
+                        {scope.map(item => (
+                          <li class="scope-row is-checked" data-check data-seq>
+                            <span class="scope-box">
+                              <Icon name="check" size={13} />
+                            </span>
+                            <span class="scope-name">{item.name}</span>
+                            <span class:list={['scope-pri', `is-${item.priority.toLowerCase()}`]}>{item.priority}</span>
+                            <span class="scope-what">{item.what}</span>
+                          </li>
+                        ))}
+                        <li class="scope-row is-manual" data-seq>
+                          <span class="scope-box" />
+                          <span class="scope-name">Dynamic permissions</span>
+                          <span class="scope-pri is-manual">Manual</span>
+                          <span class="scope-what">Unresolved — assign a manual check</span>
+                        </li>
+                      </ul>
+                      <p class="scope-add" data-seq>
+                        <Icon name="plus" size={14} />
+                        Add a check from your team’s knowledge
+                      </p>
+                      <div class="scope-foot" data-seq>
+                        <span class="label">Runs in an isolated environment</span>
+                        <span class="fake-btn" data-approve>
+                          Approve 3 checks
+                          <Icon name="arrow" size={14} />
+                        </span>
+                      </div>
+                    </>
+                  )}
+
+                  {index === 3 && (
+                    <>
+                      <div class="p-toolbar" data-seq>
+                        <span class="mono p-run">Run #1024 · build a3f9c21</span>
+                        <span class="run-summary">
+                          <span class="is-pass">2 verified</span>
+                          <span class="is-risk">1 at risk</span>
+                          <span class="is-unverified">1 not verified</span>
+                        </span>
+                      </div>
+                      <ul class="results" role="list">
+                        {results.map(result => (
+                          <li class:list={['res', `is-${result.kind}`, 'is-done']} data-run data-seq>
+                            <span class="res-icon">
+                              <span class="res-spinner" />
+                              {result.kind === 'pass' && <Icon name="check" size={14} />}
+                              {result.kind === 'risk' && <Icon name="cross" size={14} />}
+                              {result.kind === 'unverified' && <Icon name="unknown" size={16} />}
+                            </span>
+                            <span class="res-name">{result.name}</span>
+                            <span class="res-detail mono">{result.detail}</span>
+                            <span class="res-status">
+                              <span class="res-running">Running…</span>
+                              <span class="res-final">{result.status}</span>
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                      <div class="evidence" data-seq>
+                        <p class="label">Reviewable evidence · Guardian access</p>
+                        <p>Guardian access failed after a successful login.</p>
+                        <div class="ev-tags">
+                          <span>API response</span>
+                          <span>Browser trace</span>
+                          <span>Build a3f9c21</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .how-head {
+    display: grid;
+    gap: clamp(22px, 2.6vw, 32px);
+    max-width: 880px;
+    margin-bottom: clamp(56px, 7vw, 100px);
+  }
+
+  /* ---------- Steps ---------- */
+
+  .how-grid {
+    position: relative;
+    display: grid;
+    /* minmax(0, …) stops the nowrap diff lines from widening the column past the viewport. */
+    grid-template-columns: minmax(0, 1fr);
+    gap: 56px;
+  }
+
+  .how-step {
+    min-width: 0;
+  }
+
+  .how-rail {
+    display: none;
+  }
+
+  .how-copy {
+    position: relative;
+  }
+
+  .how-copy-inner {
+    position: relative;
+    padding-left: 58px;
+  }
+
+  .how-num {
+    position: absolute;
+    left: 0;
+    top: -11px;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    color: var(--ink-3);
+    background: var(--paper);
+    box-shadow: inset 0 0 0 1px var(--line-2);
+    transition:
+      background-color 0.5s ease,
+      color 0.5s ease,
+      box-shadow 0.5s ease;
+  }
+
+  .how-copy.is-active .how-num {
+    background: var(--signal);
+    color: #fff;
+    box-shadow: 0 0 0 6px var(--signal-soft);
+  }
+
+  .how-step-label {
+    margin-bottom: 14px;
+  }
+
+  .how-title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 3.2vw, 3rem);
+    font-weight: 380;
+    letter-spacing: -0.03em;
+    line-height: 1.02;
+    margin-bottom: 18px;
+  }
+
+  .how-body {
+    max-width: 30rem;
+    font-size: 1.0625rem;
+  }
+
+  .how-points {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 24px;
+  }
+
+  .how-points li {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px 7px 10px;
+    border-radius: 999px;
+    font-size: 0.84rem;
+    color: var(--ink-2);
+    box-shadow: inset 0 0 0 1px var(--line-2);
+  }
+
+  .how-points li :global(svg) {
+    color: var(--signal);
+  }
+
+  .how-panel {
+    margin-top: 28px;
+  }
+
+  /* Desktop + JS: copy scrolls on the left, one sticky product window swaps state on the
+     right. Without JS every panel simply stays inline under its step. */
+  @media (min-width: 1024px) {
+    :global(html.js) .how-head {
+      margin-bottom: 0;
+    }
+
+    :global(html.js) .how-grid {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      column-gap: clamp(40px, 6vw, 104px);
+      row-gap: 0;
+    }
+
+    :global(html.js) .how-step {
+      display: contents;
+    }
+
+    :global(html.js) .how-rail {
+      display: block;
+      grid-column: 1;
+      grid-row: 1 / span 4;
+      position: relative;
+      width: 1px;
+      margin: 20vh 0 20vh 18px;
+      background: var(--line-2);
+    }
+
+    .how-rail span {
+      position: absolute;
+      inset: 0;
+      background: var(--signal);
+      transform-origin: top center;
+      transform: scaleY(var(--progress, 0));
+    }
+
+    :global(html.js) .how-copy {
+      grid-column: 1;
+      grid-row: var(--row);
+      min-height: 76vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      opacity: 0.32;
+      transition: opacity 0.6s ease;
+    }
+
+    :global(html.js) .how-copy.is-active {
+      opacity: 1;
+    }
+
+    :global(html.js) .how-panel {
+      grid-column: 2;
+      grid-row: 1 / span 4;
+      align-self: start;
+      position: sticky;
+      top: max(calc(var(--header-h) + 24px), calc(50vh - 290px));
+      margin-top: 0;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(28px) scale(0.985);
+      transition:
+        opacity 0.6s ease,
+        transform 0.9s var(--ease-out),
+        visibility 0s linear 0.6s;
+    }
+
+    :global(html.js) .how-panel.is-active {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      transition:
+        opacity 0.6s ease,
+        transform 0.9s var(--ease-out),
+        visibility 0s;
+    }
+  }
+
+  /* ---------- Product window ---------- */
+
+  .app {
+    border-radius: var(--r-lg);
+    background: var(--night);
+    color: var(--night-text);
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 0.05) inset,
+      0 60px 100px -60px rgb(18 18 16 / 0.7);
+    overflow: hidden;
+  }
+
+  .app-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--night-line);
+    font-size: 0.8rem;
+    color: var(--night-muted);
+  }
+
+  .app-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .app-title :global(svg) {
+    flex: none;
+    color: var(--pass-night);
+  }
+
+  .app-sep {
+    opacity: 0.5;
+    margin-inline: 4px;
+  }
+
+  .app-steps {
+    display: flex;
+    gap: 5px;
+    flex: none;
+  }
+
+  .app-steps i {
+    width: 18px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--night-line-2);
+  }
+
+  .app-steps i.is-past {
+    background: rgb(143 156 255 / 0.45);
+  }
+
+  .app-steps i.is-on {
+    background: var(--signal-night);
+  }
+
+  .app-body {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-height: 470px;
+    padding: 20px 22px 24px;
+  }
+
+  .p-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 0.86rem;
+    color: var(--night-text);
+  }
+
+  .p-file {
+    font-size: 0.8rem;
+  }
+
+  .p-diffstat {
+    display: inline-flex;
+    gap: 8px;
+    font-size: 0.8rem;
+  }
+
+  .add {
+    color: var(--pass-night);
+  }
+
+  .del {
+    color: var(--risk-night);
+  }
+
+  .chip-night {
+    color: var(--night-muted);
+    box-shadow: inset 0 0 0 1px var(--night-line-2);
+  }
+
+  .chip-night.is-signal {
+    color: var(--signal-night);
+    box-shadow: inset 0 0 0 1px rgb(143 156 255 / 0.45);
+  }
+
+  /* Diff */
+  .code {
+    border-radius: 10px;
+    background: var(--night-2);
+    box-shadow: inset 0 0 0 1px var(--night-line);
+    padding: 12px 0;
+    font-size: 0.78rem;
+    line-height: 1.85;
+    overflow-x: auto;
+  }
+
+  .cl {
+    display: grid;
+    grid-template-columns: 38px 18px 1fr;
+    align-items: baseline;
+    padding-right: 16px;
+    white-space: nowrap;
+  }
+
+  .ln {
+    text-align: right;
+    padding-right: 10px;
+    color: rgb(237 234 227 / 0.3);
+    user-select: none;
+  }
+
+  .sg {
+    text-align: center;
+  }
+
+  .cx {
+    padding-left: calc(var(--indent) * 2.2ch);
+    color: rgb(237 234 227 / 0.86);
+  }
+
+  .cl-add {
+    background: rgb(79 214 162 / 0.09);
+    box-shadow: inset 2px 0 0 var(--pass-night);
+  }
+
+  .cl-add .sg {
+    color: var(--pass-night);
+  }
+
+  .cl-del {
+    background: rgb(255 124 94 / 0.08);
+    box-shadow: inset 2px 0 0 var(--risk-night);
+  }
+
+  .cl-del .sg {
+    color: var(--risk-night);
+  }
+
+  .cl-del .cx {
+    text-decoration: line-through;
+    text-decoration-color: rgb(255 124 94 / 0.5);
+    color: rgb(237 234 227 / 0.55);
+  }
+
+  .code :global(.k) {
+    color: var(--signal-night);
+  }
+
+  .code :global(.f) {
+    color: #fff;
+  }
+
+  .code :global(.s) {
+    color: var(--caution-night);
+  }
+
+  .code :global(.n) {
+    color: var(--pass-night);
+  }
+
+  .code :global(.t) {
+    color: #c9b8ff;
+  }
+
+  .findings ul {
+    display: grid;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .findings li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.88rem;
+    color: var(--night-text);
+  }
+
+  .findings code {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--signal-night);
+  }
+
+  .findings .label,
+  .evidence .label,
+  .scope-foot .label {
+    color: var(--night-muted);
+  }
+
+  .fdot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--night-muted);
+    flex: none;
+  }
+
+  .fdot.is-signal {
+    background: var(--signal-night);
+    box-shadow: 0 0 0 4px rgb(143 156 255 / 0.18);
+  }
+
+  /* Trace */
+  .p-origin {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.86rem;
+  }
+
+  .origin-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--signal);
+    box-shadow: 0 0 0 5px rgb(35 64 255 / 0.3);
+  }
+
+  .trace {
+    position: relative;
+    display: grid;
+    gap: 10px;
+    padding-left: 26px;
+  }
+
+  .trace::before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: -12px;
+    bottom: 28px;
+    width: 1.5px;
+    background: linear-gradient(var(--signal-night), rgb(143 156 255 / 0.5) 75%, var(--caution-night));
+  }
+
+  .trace-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(118px, auto) minmax(24px, 1fr) auto auto;
+    align-items: center;
+    gap: 12px;
+    min-height: 58px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--night-2);
+    box-shadow: inset 0 0 0 1px var(--night-line);
+  }
+
+  .trace-row::before {
+    content: '';
+    position: absolute;
+    left: -21px;
+    top: 50%;
+    width: 21px;
+    height: 1.5px;
+    background: rgb(143 156 255 / 0.6);
+  }
+
+  .trace-fn {
+    font-size: 0.78rem;
+    color: var(--night-text);
+  }
+
+  .trace-line {
+    height: 1.5px;
+    background: linear-gradient(90deg, var(--signal-night), rgb(143 156 255 / 0.3));
+    transform-origin: left center;
+  }
+
+  .trace-area {
+    display: grid;
+    gap: 2px;
+    text-align: right;
+  }
+
+  .trace-area-name {
+    font-size: 0.88rem;
+    font-weight: 580;
+  }
+
+  .trace-route {
+    font-size: 0.7rem;
+    color: var(--night-muted);
+  }
+
+  .trace-why {
+    min-width: 66px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--signal-night);
+    box-shadow: inset 0 0 0 1px rgb(143 156 255 / 0.4);
+  }
+
+  .trace-row.is-unknown {
+    background: rgb(243 185 87 / 0.06);
+    box-shadow: inset 0 0 0 1px rgb(243 185 87 / 0.35);
+  }
+
+  .trace-row.is-unknown::before {
+    background: rgb(243 185 87 / 0.7);
+  }
+
+  .trace-row.is-unknown .trace-line {
+    background: repeating-linear-gradient(90deg, var(--caution-night) 0 5px, transparent 5px 10px);
+  }
+
+  .trace-row.is-unknown .trace-area-name,
+  .trace-row.is-unknown .trace-why {
+    color: var(--caution-night);
+  }
+
+  .trace-row.is-unknown .trace-why {
+    box-shadow: inset 0 0 0 1px rgb(243 185 87 / 0.45);
+  }
+
+  .p-note {
+    margin-top: auto;
+    font-size: 0.84rem;
+    color: var(--night-muted);
+  }
+
+  .is-caution {
+    color: var(--caution-night);
+    white-space: nowrap;
+  }
+
+  /* Scope */
+  .p-count {
+    font-size: 0.75rem;
+    color: var(--signal-night);
+  }
+
+  .scope {
+    display: grid;
+    gap: 8px;
+  }
+
+  .scope-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      'box name pri'
+      'box what what';
+    align-items: center;
+    column-gap: 14px;
+    row-gap: 2px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    background: var(--night-2);
+    box-shadow: inset 0 0 0 1px var(--night-line);
+    transition: box-shadow 0.4s ease;
+  }
+
+  .scope-box {
+    grid-area: box;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    box-shadow: inset 0 0 0 1.5px var(--night-line-2);
+    color: transparent;
+    transition:
+      background-color 0.35s ease,
+      box-shadow 0.35s ease,
+      color 0.35s ease;
+  }
+
+  .scope-row.is-checked {
+    box-shadow: inset 0 0 0 1px rgb(143 156 255 / 0.35);
+  }
+
+  .scope-row.is-checked .scope-box {
+    background: var(--signal);
+    box-shadow: none;
+    color: #fff;
+  }
+
+  .scope-name {
+    grid-area: name;
+    font-size: 0.92rem;
+    font-weight: 580;
+  }
+
+  .scope-what {
+    grid-area: what;
+    font-size: 0.8rem;
+    color: var(--night-muted);
+  }
+
+  .scope-pri {
+    grid-area: pri;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .scope-pri.is-high {
+    color: #fff;
+    background: rgb(35 64 255 / 0.55);
+  }
+
+  .scope-pri.is-medium {
+    color: var(--night-text);
+    background: var(--night-3);
+  }
+
+  .scope-pri.is-manual {
+    color: var(--caution-night);
+    box-shadow: inset 0 0 0 1px rgb(243 185 87 / 0.45);
+  }
+
+  .scope-row.is-manual .scope-box {
+    box-shadow: inset 0 0 0 1.5px rgb(243 185 87 / 0.6);
+  }
+
+  .scope-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.84rem;
+    color: var(--night-muted);
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px dashed var(--night-line-2);
+  }
+
+  .scope-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: auto;
+  }
+
+  .fake-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 16px;
+    border-radius: 999px;
+    background: var(--night-text);
+    color: var(--night);
+    font-size: 0.86rem;
+    font-weight: 580;
+    white-space: nowrap;
+  }
+
+  /* Evidence */
+  .p-run {
+    white-space: nowrap;
+  }
+
+  .run-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .run-summary span {
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .run-summary .is-pass {
+    color: var(--pass-night);
+    background: rgb(79 214 162 / 0.12);
+  }
+
+  .run-summary .is-risk {
+    color: var(--risk-night);
+    background: rgb(255 124 94 / 0.12);
+  }
+
+  .run-summary .is-unverified {
+    color: var(--caution-night);
+    background: rgb(243 185 87 / 0.12);
+  }
+
+  .results {
+    display: grid;
+    gap: 8px;
+  }
+
+  .res {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'icon name status'
+      'icon detail status';
+    align-items: center;
+    column-gap: 14px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--night-2);
+    box-shadow: inset 0 0 0 1px var(--night-line);
+  }
+
+  .res-icon {
+    grid-area: icon;
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+  }
+
+  .res-name {
+    grid-area: name;
+    font-size: 0.92rem;
+    font-weight: 580;
+  }
+
+  .res-detail {
+    grid-area: detail;
+    font-size: 0.72rem;
+    color: var(--night-muted);
+  }
+
+  .res-status {
+    grid-area: status;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .res-spinner {
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    border: 1.5px solid var(--night-line-2);
+    border-top-color: var(--signal-night);
+    opacity: 0;
+  }
+
+  .res :global(svg) {
+    transition:
+      opacity 0.3s ease,
+      transform 0.5s var(--ease-spring);
+  }
+
+  .res-running {
+    display: none;
+    color: var(--night-muted);
+  }
+
+  .res:not(.is-done) .res-running {
+    display: inline;
+  }
+
+  .res:not(.is-done) .res-final {
+    display: none;
+  }
+
+  .res:not(.is-done) .res-spinner {
+    opacity: 1;
+    animation: spin 0.8s linear infinite;
+  }
+
+  .res:not(.is-done) :global(svg) {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+
+  .res:not(.is-done) .res-icon {
+    background: none !important;
+  }
+
+  .res.is-pass .res-icon {
+    background: rgb(79 214 162 / 0.14);
+    color: var(--pass-night);
+  }
+
+  .res.is-pass .res-final {
+    color: var(--pass-night);
+  }
+
+  .res.is-risk {
+    box-shadow: inset 0 0 0 1px rgb(255 124 94 / 0.4);
+  }
+
+  .res.is-risk .res-icon {
+    background: rgb(255 124 94 / 0.14);
+    color: var(--risk-night);
+  }
+
+  .res.is-risk .res-final {
+    color: var(--risk-night);
+  }
+
+  .res.is-unverified .res-icon {
+    color: var(--caution-night);
+  }
+
+  .res.is-unverified .res-final {
+    color: var(--caution-night);
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .evidence {
+    margin-top: auto;
+    display: grid;
+    gap: 8px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgb(35 64 255 / 0.18), rgb(35 64 255 / 0.04));
+    box-shadow: inset 0 0 0 1px rgb(143 156 255 / 0.25);
+    font-size: 0.9rem;
+  }
+
+  .ev-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+  }
+
+  .ev-tags span {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--night-text);
+    background: rgb(255 255 255 / 0.07);
+  }
+
+  @media (max-width: 640px) {
+    .how-copy-inner {
+      padding-left: 50px;
+    }
+
+    .app-body {
+      min-height: 0;
+      padding: 16px 14px 18px;
+    }
+
+    .app-title > span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .trace-row {
+      grid-template-columns: 1fr auto;
+      grid-template-areas:
+        'fn why'
+        'area area';
+      row-gap: 6px;
+    }
+
+    .trace-fn {
+      grid-area: fn;
+    }
+
+    .trace-why {
+      grid-area: why;
+    }
+
+    .trace-area {
+      grid-area: area;
+      text-align: left;
+      grid-template-columns: auto 1fr;
+      align-items: baseline;
+      gap: 10px;
+    }
+
+    .trace-line {
+      display: none;
+    }
+
+    .scope-foot {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .fake-btn {
+      justify-content: center;
+    }
+
+    .p-toolbar {
+      flex-wrap: wrap;
+    }
+  }
+</style>

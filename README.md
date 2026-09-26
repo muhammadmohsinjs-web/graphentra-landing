@@ -1,100 +1,97 @@
 # Graphentra landing page
 
-This repository contains the portable Graphentra homepage and its early-access lead endpoint. The visual site remains plain HTML, CSS, and JavaScript. Production lead submissions go through a Cloudflare Worker at `/api/leads` and are stored in Cloudflare D1.
+Graphentra’s public landing page is built with Astro and TypeScript, with GSAP-powered motion. The early-access form submits to a Cloudflare Worker at `/api/leads`; leads are stored in Cloudflare D1. The worker, migrations, and allowed-value contract remain separate from the static site output.
+
+## Requirements
+
+- Node.js 22.12 or later
+- npm
+- Wrangler authentication for remote database operations and deployment
 
 ## Local development
 
-Install-free static preview:
-
-```sh
-python3 -m http.server 4173
-```
-
-Then open `http://localhost:4173`. A basic static server cannot execute `/api/leads`, so a form submission in that preview correctly shows the retryable error state rather than a false success.
-
-To run the full Workers stack locally with a local D1 database:
+Install dependencies and start the Astro dev server:
 
 ```sh
 npm install
-cp .env.example .dev.vars
 npm run dev
 ```
 
-`wrangler dev` serves the static site, applies the local D1 migration, and runs the `/api/leads` Worker together. Put a real value in `LEADS_RATE_LIMIT_SALT` inside `.dev.vars` (it is gitignored) instead of editing `.env` if you want to test a real submission.
-
-To verify the source:
+Open `http://localhost:4321`. Astro proxies `/api` to `http://127.0.0.1:8787`; run the Worker in a second terminal to exercise the form:
 
 ```sh
-npm run lint
-npm run typecheck
-npm test
+npx wrangler d1 migrations apply DB --local
+npx wrangler dev
+```
+
+Set a local `LEADS_RATE_LIMIT_SALT` in `.dev.vars` (gitignored) before testing submissions. Use a random value at least 16 characters long. The local D1 database uses Wrangler’s local persistence.
+
+For a static preview of the generated page, run:
+
+```sh
 npm run build
+python3 -m http.server 4173 --directory dist
 ```
 
-The build command validates the deployment contract and writes static assets to `dist/`. It deliberately does not copy the Worker source into the public build directory.
+A plain static server does not execute the Worker endpoint, so form submission requires `wrangler dev`.
 
-## Database setup
-
-The schema lives in `migrations/0001_create_leads.sql` and is applied to the `graphentra-leads` D1 database declared in `wrangler.jsonc`. Apply remote migrations after the Worker is configured:
+## Checks
 
 ```sh
-npx wrangler d1 migrations apply graphentra-leads --remote
+npm run build      # Astro build plus deployment-contract verification
+npm run typecheck  # Astro diagnostics and Worker syntax checks
+npm run lint       # Node syntax checks
+npm test           # Worker and form-contract tests
 ```
 
-The migration creates:
+The build guard verifies the compiled form contract, confirms role and interest choices are accepted by both the Worker and D1 migration, checks local asset references, and rejects backend source files in `dist/`.
 
-- `leads`, including every requested lead field plus `submission_id`, `consent_given`, and `consented_at` for idempotency and consent evidence. `consent_given` is constrained to `1`, and `role`/`interest_type` are constrained to the expected values.
-- `lead_submission_limits`, which stores only HMAC fingerprints for short-lived abuse controls—not raw IP addresses.
+## D1 and configuration
 
-The Worker coordinates the atomicity instead of a stored procedure, matching the previous Postgres RPC behavior:
+`wrangler.jsonc` declares the D1 binding as `DB`, backed by the `graphentra` database, and serves static assets from `dist/`. Apply migrations using the binding name (`DB`), rather than the database’s display name:
 
-- Email is normalized to lowercase before insert.
-- A submission that repeats `submission_id` returns success without inserting a duplicate row.
-- At most three attempts per fingerprint are allowed in ten minutes (a fourth returns `429`).
-- A second lead for the same email in two minutes is suppressed without inserting a second row.
-- `lead_submission_limits` rows older than 24 hours are cleaned out opportunistically.
+```sh
+npx wrangler d1 migrations apply DB --local
+npx wrangler d1 migrations apply DB --remote
+```
 
-After applying the migration, submit a test lead and confirm the row exists in `leads`.
+The migration in `migrations/0001_create_leads.sql` creates:
 
-## Environment variables
+- `leads`, including submission idempotency and consent evidence; role and interest values are constrained to the choices offered by the form.
+- `lead_submission_limits`, storing HMAC fingerprints for short-lived abuse controls rather than raw IP addresses.
 
-Required in the Workers deployment environment:
+The Worker normalizes email addresses, treats repeat submission IDs idempotently, rate-limits attempts, suppresses rapid duplicate leads for the same email, and opportunistically removes old rate-limit records.
 
-- `LEADS_RATE_LIMIT_SALT` — a random server-only value of at least 16 characters. Use a long cryptographically random value in production.
+Required server-side secret:
 
-Optional:
+- `LEADS_RATE_LIMIT_SALT`: random server-only value of at least 16 characters. Set it with `npx wrangler secret put LEADS_RATE_LIMIT_SALT` for deployment, or in `.dev.vars` locally.
 
-- `WEBSITE_LEAD_SOURCE` — defaults to `website`.
-- `LEADS_NOTIFICATION_EMAIL` — the recipient address to use when an email provider is connected.
+Optional variable:
 
-The D1 binding (`DB`) and the static assets binding (`ASSETS`) come from `wrangler.jsonc`, not from environment variables. Copy `LEADS_RATE_LIMIT_SALT` and `WEBSITE_LEAD_SOURCE` into the Workers environment-variable UI; for local `wrangler dev`, copy `.env.example` into `.dev.vars`.
+- `WEBSITE_LEAD_SOURCE`: source label; defaults to `website`.
 
-## Deployment
+`DB` and `ASSETS` are Wrangler bindings, not environment variables. The migration directory is `migrations/` as configured in `wrangler.jsonc`.
 
-The included `wrangler.jsonc` declares the `graphentra-leads` D1 binding, deploys `dist/` as static assets, and routes `POST /api/leads` through `worker/index.js`, serving everything else through the static assets binding.
+## Deploy
 
-1. Apply the migration to the remote database:
-   ```sh
-   npx wrangler d1 migrations apply graphentra-leads --remote
-   ```
-2. Set the secret on the Workers project (stored encrypted, never committed):
+1. Authenticate and apply the remote migration:
+
    ```sh
    npx wrangler login
-   npx wrangler secret put LEADS_RATE_LIMIT_SALT
+   npx wrangler d1 migrations apply DB --remote
    ```
-3. Build and deploy:
+
+2. Set the rate-limit secret and deploy:
+
    ```sh
+   npx wrangler secret put LEADS_RATE_LIMIT_SALT
    npm run deploy
    ```
-   `npm run deploy` runs the build and uploads the Worker plus static assets. Deploying through a CI build environment (e.g. the Workers "Builds" tab) works with either `npm run deploy` or a plain `npx wrangler deploy`, because the project's `prepare` script builds `dist/` automatically during `npm ci`/`npm install`.
-4. Submit a test lead, confirm the row in the D1 `leads` table, and verify that a second rapid click does not create a second row.
 
-If you created the D1 database through a different name or in a different account, update `database_name`/`database_id` under `d1_databases` in `wrangler.jsonc`.
+`npm run deploy` builds and verifies the site, then deploys the Worker and static assets. Confirm a test lead is stored in D1 after deployment.
 
-## External integrations still needed
+## Integrations
 
-No email provider or analytics platform was present in the original project, so neither a second analytics service nor a new email dependency was added.
-
-- Email: database persistence is complete and independent of notifications. To enable team email, connect the team’s selected provider on the server after the D1 write succeeds, use `LEADS_NOTIFICATION_EMAIL` as the recipient, and include the lead fields and submission date listed in the product requirements. Provider API credentials must remain server-only. Notification failure should be logged without discarding an already-saved lead.
-- Analytics: `app.js` emits the five requested event names through an existing `gtag`, Plausible, or `dataLayer` when one is present. It also dispatches a `graphentra:analytics` browser event for a future first-party adapter. No personal form fields are included.
-- LinkedIn and privacy: the original source contained neither a Graphentra LinkedIn Page URL nor a privacy-policy URL, so the success-state LinkedIn action and privacy link are intentionally omitted rather than invented.
+- **Email:** lead persistence is independent of notifications. No provider is configured; connect one server-side if notifications are needed.
+- **Analytics:** the client emits `early_access_section_viewed`, `early_access_form_started`, `early_access_form_submitted`, `early_access_form_failed`, and `discuss_pilot_clicked` through an existing `gtag`, Plausible, or `dataLayer` integration. It also dispatches `graphentra:analytics`. Form data is not included in analytics events.
+- **Privacy and social links:** no policy URL or Graphentra LinkedIn Page URL was provided, so none is invented in the page.

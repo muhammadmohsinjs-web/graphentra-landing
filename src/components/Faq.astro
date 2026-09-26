@@ -1,0 +1,210 @@
+---
+import Kicker from './Kicker.astro';
+
+const faqs = [
+  {
+    q: 'Is Graphentra available today?',
+    a: 'Graphentra is in development. The first release focuses on explainable change-impact analysis, and isolated browser and API verification is being built alongside it. The examples on this page illustrate the intended experience.'
+  },
+  {
+    q: 'Do we need an existing test suite?',
+    a: 'Not for impact analysis. It is designed to give you a useful verification scope even when you rely on manual QA. Automated execution will use supported existing tests and approved scenarios where available — anything without a check stays explicitly unverified.'
+  },
+  {
+    q: 'Does an affected area mean a bug exists?',
+    a: 'No. It means there is a connection to changed code that may deserve attention. Tests and human review establish whether the observed behaviour matches the expected behaviour.'
+  },
+  {
+    q: 'Which technologies will be supported first?',
+    a: 'The initial focus is TypeScript and JavaScript applications, with framework support introduced in stages. Browser verification is planned around Playwright, alongside API checks and adapters for test runners such as pytest. Broader language support is part of the longer-term architecture.'
+  },
+  {
+    q: 'How will automated verification stay isolated?',
+    a: 'The planned execution layer uses disposable test environments, scoped credentials, approved actions and run limits. Test results will identify the build and environment used. Production systems are outside the initial execution scope.'
+  }
+];
+---
+
+<section class="section faq" id="faq" aria-labelledby="faq-title">
+  <div class="container faq-grid">
+    <div class="faq-head">
+      <Kicker index="07" label="A few good questions" />
+      <h2 class="display h-section" id="faq-title" data-split>The details <em>that matter.</em></h2>
+      <p class="body-copy faq-note" data-reveal>
+        Something else on your mind? Ask it in the <a class="link" href="#early-access">early-access form</a> — we review every submission.
+      </p>
+    </div>
+
+    <div class="faq-list" data-reveal>
+      {
+        faqs.map((faq, index) => (
+          <details class="faq-item" data-faq>
+            <summary class="faq-summary">
+              <span class="faq-index mono">{String(index + 1).padStart(2, '0')}</span>
+              <span class="faq-q">{faq.q}</span>
+              <span class="faq-icon" aria-hidden="true"></span>
+            </summary>
+            <div class="faq-a" data-faq-body>
+              <p>{faq.a}</p>
+            </div>
+          </details>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 48px clamp(32px, 6vw, 110px);
+    align-items: start;
+  }
+
+  .faq-head {
+    display: grid;
+    gap: clamp(22px, 2.6vw, 32px);
+    position: sticky;
+    top: calc(var(--header-h) + 40px);
+  }
+
+  .faq-head .h-section {
+    max-width: 10ch;
+  }
+
+  .faq-note {
+    max-width: 22rem;
+  }
+
+  .faq-note .link {
+    color: var(--signal);
+    background-size: 100% 1px;
+  }
+
+  .faq-list {
+    border-top: 1px solid var(--ink);
+  }
+
+  .faq-item {
+    border-bottom: 1px solid var(--line-2);
+  }
+
+  .faq-summary {
+    display: grid;
+    grid-template-columns: 44px 1fr 36px;
+    align-items: center;
+    gap: 12px;
+    padding: 26px 0;
+    cursor: pointer;
+    list-style: none;
+    border-radius: 4px;
+  }
+
+  .faq-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-index {
+    font-size: 0.75rem;
+    color: var(--signal);
+  }
+
+  .faq-q {
+    font-size: clamp(1.15rem, 1.6vw, 1.45rem);
+    font-weight: 560;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+    transition: color 0.3s ease;
+  }
+
+  .faq-summary:hover .faq-q {
+    color: var(--signal);
+  }
+
+  .faq-icon {
+    position: relative;
+    justify-self: end;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1px var(--line-2);
+    transition:
+      background-color 0.4s ease,
+      box-shadow 0.4s ease,
+      transform 0.6s var(--ease-out);
+  }
+
+  .faq-icon::before,
+  .faq-icon::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 12px;
+    height: 1.5px;
+    margin: -0.75px 0 0 -6px;
+    border-radius: 2px;
+    background: var(--ink);
+    transition:
+      transform 0.5s var(--ease-out),
+      background-color 0.4s ease;
+  }
+
+  .faq-icon::after {
+    transform: rotate(90deg);
+  }
+
+  .faq-item[open]:not(.is-closing) .faq-icon {
+    background: var(--ink);
+    box-shadow: none;
+    transform: rotate(180deg);
+  }
+
+  .faq-item[open]:not(.is-closing) .faq-icon::before,
+  .faq-item[open]:not(.is-closing) .faq-icon::after {
+    background: var(--paper);
+  }
+
+  .faq-item[open]:not(.is-closing) .faq-icon::after {
+    transform: rotate(0deg);
+  }
+
+  .faq-a {
+    overflow: hidden;
+  }
+
+  .faq-a p {
+    padding: 0 48px 30px 56px;
+    max-width: 44rem;
+    color: var(--ink-3);
+    font-size: 1.02rem;
+    text-wrap: pretty;
+  }
+
+  @media (max-width: 960px) {
+    .faq-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .faq-head {
+      position: static;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .faq-summary {
+      grid-template-columns: 32px 1fr 32px;
+      padding: 22px 0;
+    }
+
+    .faq-icon {
+      width: 32px;
+      height: 32px;
+    }
+
+    .faq-a p {
+      padding: 0 0 26px 44px;
+    }
+  }
+</style>

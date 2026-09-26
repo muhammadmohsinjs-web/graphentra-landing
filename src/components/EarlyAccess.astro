@@ -1,0 +1,743 @@
+---
+import Kicker from './Kicker.astro';
+import Icon from './Icon.astro';
+
+// These values must match ALLOWED_ROLES / ALLOWED_INTERESTS in worker/internal/leads.js
+// and the CHECK constraints in migrations/0001_create_leads.sql.
+const roles = [
+  'QA Engineer',
+  'QA Lead or Manager',
+  'Engineering Manager',
+  'Developer or Tech Lead',
+  'Head or VP of Engineering',
+  'Founder or CTO',
+  'Product or Release Manager',
+  'Other'
+];
+
+const interests = [
+  { value: 'Product updates', hint: 'Occasional news as it ships' },
+  { value: 'Early access', hint: 'Try it with your team first' },
+  { value: 'Design partnership', hint: 'Shape the workflow with us' },
+  { value: 'Paid pilot', hint: 'Explore it on realistic changes' }
+];
+
+const benefits = ['See early product demonstrations', 'Help shape the change-impact workflow', 'Explore a pilot using realistic change scenarios'];
+---
+
+<section class="early" id="early-access" aria-labelledby="early-access-heading">
+  <svg class="early-rings" viewBox="0 0 600 600" aria-hidden="true">
+    <circle cx="300" cy="300" r="90"></circle>
+    <circle cx="300" cy="300" r="170"></circle>
+    <circle cx="300" cy="300" r="250"></circle>
+  </svg>
+
+  <div class="container early-grid">
+    <div class="early-copy">
+      <Kicker index="08" label="Early access" />
+      <h2 class="display early-title" id="early-access-heading" data-split>Help shape <em>Graphentra.</em></h2>
+      <p class="early-lede" data-reveal>
+        We’re building Graphentra with QA and engineering teams who want to understand which parts of their application a code change may affect. Tell us how your team plans regression testing today, and we’ll contact you about relevant early-access and pilot opportunities.
+      </p>
+      <ul class="early-benefits" aria-label="Early-access benefits" data-reveal>
+        {
+          benefits.map((benefit, index) => (
+            <li>
+              <span class="mono" aria-hidden="true">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              {benefit}
+            </li>
+          ))
+        }
+      </ul>
+      <p class="privacy-note" data-reveal>
+        <Icon name="shield" size={18} />
+        <span>No spam. We’ll only contact you about Graphentra and relevant early-access opportunities.</span>
+      </p>
+    </div>
+
+    <div class="form-card" data-reveal>
+      <div id="lead-form-content">
+        <div class="form-intro">
+          <span class="label">Your team &amp; workflow</span>
+          <p>All fields are required.</p>
+        </div>
+
+        <form id="early-access-form" action="/api/leads" method="post" novalidate>
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="lead-name">Full name</label>
+              <input id="lead-name" name="name" type="text" placeholder="Your full name" autocomplete="name" maxlength="120" required aria-describedby="name-error" />
+              <p class="field-error" id="name-error"></p>
+            </div>
+            <div class="form-field">
+              <label for="lead-email">Work email</label>
+              <input id="lead-email" name="email" type="email" placeholder="you@company.com" autocomplete="email" maxlength="254" required aria-describedby="email-error" />
+              <p class="field-error" id="email-error"></p>
+            </div>
+            <div class="form-field">
+              <label for="lead-company">Company name</label>
+              <input id="lead-company" name="company" type="text" placeholder="Your company" autocomplete="organization" maxlength="160" required aria-describedby="company-error" />
+              <p class="field-error" id="company-error"></p>
+            </div>
+            <div class="form-field">
+              <label for="lead-role">Role</label>
+              <div class="select-wrap">
+                <select id="lead-role" name="role" required aria-describedby="role-error">
+                  <option value="">Select your role</option>
+                  {roles.map(role => <option value={role}>{role}</option>)}
+                </select>
+                <svg class="select-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              </div>
+              <p class="field-error" id="role-error"></p>
+            </div>
+            <div class="form-field form-field-wide">
+              <label for="lead-challenge">What is your biggest regression-testing challenge?</label>
+              <textarea id="lead-challenge" name="challenge" placeholder="Tell us how your team currently decides what to verify after a code change." minlength="20" maxlength="1000" rows="5" required aria-describedby="challenge-help challenge-error"></textarea>
+              <div class="field-meta" id="challenge-help">
+                <span class="field-meta-min"><span class="min-meter" aria-hidden="true"><i data-challenge-meter></i></span>Minimum 20 characters</span>
+                <span id="challenge-count">0 / 1,000</span>
+              </div>
+              <p class="field-error" id="challenge-error"></p>
+            </div>
+          </div>
+
+          <fieldset class="interest-fieldset" aria-describedby="interest-error">
+            <legend>What are you interested in?</legend>
+            <div class="interest-options">
+              {
+                interests.map((interest, index) => (
+                  <label class="choice">
+                    {index === 0 ? (
+                      <input type="radio" name="interest" value={interest.value} required />
+                    ) : (
+                      <input type="radio" name="interest" value={interest.value} checked={interest.value === 'Early access'} />
+                    )}
+                    <span class="choice-box">
+                      <span class="choice-dot" aria-hidden="true"></span>
+                      <span class="choice-text">
+                        <span class="choice-name">{interest.value}</span>
+                        <span class="choice-hint">{interest.hint}</span>
+                      </span>
+                    </span>
+                  </label>
+                ))
+              }
+            </div>
+            <p class="field-error" id="interest-error"></p>
+          </fieldset>
+
+          <div class="honeypot-field" aria-hidden="true">
+            <label for="lead-website">Website</label>
+            <input id="lead-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+          </div>
+
+          <div class="consent-field">
+            <input id="lead-consent" name="consent" type="checkbox" required aria-describedby="consent-error" />
+            <div>
+              <label for="lead-consent">I agree that Graphentra may contact me about early access, product updates and pilot opportunities.</label>
+              <p class="field-error" id="consent-error"></p>
+            </div>
+          </div>
+
+          <div id="form-status" class="form-status" role="alert" aria-live="assertive" tabindex="-1" hidden>We couldn’t submit your request. Please try again or contact us directly.</div>
+
+          <button id="lead-submit" class="btn btn-signal form-submit" type="submit" data-magnetic>
+            <span data-submit-label>Request early access</span>
+            <span class="btn-icon" aria-hidden="true"><Icon name="arrow" /></span>
+          </button>
+        </form>
+      </div>
+
+      <div id="lead-success" class="lead-success" role="status" aria-live="polite" tabindex="-1" hidden>
+        <svg class="success-mark" viewBox="0 0 72 72" aria-hidden="true">
+          <circle class="success-ring" cx="36" cy="36" r="33" pathLength="1"></circle>
+          <path class="success-check" d="m23 37 9 9 17-19" pathLength="1"></path>
+        </svg>
+        <p class="label">Request received</p>
+        <h3>Thank you for your interest in Graphentra.</h3>
+        <p>We’re currently speaking with QA and engineering teams about how they plan regression testing after code changes. We’ll review your submission and contact you about relevant early-access or pilot opportunities.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .early {
+    position: relative;
+    overflow: hidden;
+    overflow: clip;
+    isolation: isolate;
+    padding-block: var(--section-pad);
+    background: var(--signal);
+    color: #fff;
+  }
+
+  .early-rings {
+    position: absolute;
+    left: -14vw;
+    bottom: -18vw;
+    z-index: -1;
+    width: min(56vw, 760px);
+    height: auto;
+    pointer-events: none;
+  }
+
+  .early-rings circle {
+    fill: none;
+    stroke: rgb(255 255 255 / 0.22);
+    stroke-width: 1;
+    stroke-dasharray: 2 7;
+  }
+
+  .early-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 56px clamp(40px, 7vw, 120px);
+    align-items: start;
+  }
+
+  .early-copy {
+    position: sticky;
+    top: calc(var(--header-h) + 40px);
+    display: grid;
+    gap: 28px;
+  }
+
+  .early-copy :global(.kicker),
+  .early-copy :global(.kicker-index) {
+    color: rgb(255 255 255 / 0.78);
+  }
+
+  .early-title {
+    font-size: clamp(3rem, 6.4vw, 6.25rem);
+    line-height: 0.95;
+  }
+
+  .early-title em {
+    color: #fff;
+  }
+
+  .early-lede {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: rgb(255 255 255 / 0.86);
+    max-width: 34rem;
+  }
+
+  .early-benefits {
+    border-top: 1px solid rgb(255 255 255 / 0.25);
+  }
+
+  .early-benefits li {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid rgb(255 255 255 / 0.25);
+    font-size: 1rem;
+  }
+
+  .early-benefits .mono {
+    font-size: 0.75rem;
+    color: rgb(255 255 255 / 0.7);
+  }
+
+  .privacy-note {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    align-items: start;
+    max-width: 30rem;
+    font-size: 0.9rem;
+    color: rgb(255 255 255 / 0.82);
+  }
+
+  .privacy-note :global(svg) {
+    margin-top: 2px;
+  }
+
+  /* ---------- Form card ---------- */
+
+  .form-card {
+    min-width: 0;
+    padding: clamp(24px, 3vw, 44px);
+    border-radius: var(--r-xl);
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: 0 50px 100px -50px rgb(8 12 60 / 0.65);
+  }
+
+  .form-intro {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding-bottom: 18px;
+    margin-bottom: 26px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .form-intro p {
+    font-size: 0.84rem;
+    color: var(--muted);
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 18px;
+  }
+
+  .form-field {
+    min-width: 0;
+  }
+
+  .form-field-wide {
+    grid-column: 1 / -1;
+  }
+
+  .form-field label,
+  .interest-fieldset legend {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    font-weight: 560;
+    color: var(--ink-2);
+  }
+
+  .form-field input,
+  .form-field select,
+  .form-field textarea {
+    width: 100%;
+    padding: 13px 15px;
+    border: 0;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: inset 0 0 0 1px var(--line-2);
+    font-size: 1rem;
+    line-height: 1.45;
+    color: var(--ink);
+    transition:
+      box-shadow 0.25s ease,
+      background-color 0.25s ease;
+  }
+
+  .form-field input,
+  .form-field select {
+    min-height: 52px;
+  }
+
+  .form-field textarea {
+    display: block;
+    min-height: 136px;
+    resize: vertical;
+  }
+
+  .form-field input::placeholder,
+  .form-field textarea::placeholder {
+    color: #8b877d;
+    opacity: 1;
+  }
+
+  .form-field input:hover,
+  .form-field select:hover,
+  .form-field textarea:hover {
+    box-shadow: inset 0 0 0 1px var(--ink-3);
+  }
+
+  .form-field input:focus-visible,
+  .form-field select:focus-visible,
+  .form-field textarea:focus-visible {
+    outline: none;
+    box-shadow:
+      inset 0 0 0 1.5px var(--signal),
+      0 0 0 4px rgb(35 64 255 / 0.14);
+  }
+
+  .form-field [aria-invalid='true'] {
+    background: #fff8f6;
+    box-shadow: inset 0 0 0 1.5px var(--risk);
+  }
+
+  .select-wrap {
+    position: relative;
+  }
+
+  .select-wrap select {
+    appearance: none;
+    padding-right: 44px;
+    cursor: pointer;
+  }
+
+  .select-chevron {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    width: 16px;
+    height: 16px;
+    margin-top: -8px;
+    color: var(--ink-3);
+    pointer-events: none;
+  }
+
+  .field-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .field-meta-min {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .min-meter {
+    position: relative;
+    width: 44px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--paper-3);
+    overflow: hidden;
+  }
+
+  .min-meter i {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--signal);
+    transform-origin: left center;
+    transform: scaleX(var(--fill, 0));
+    transition: transform 0.3s var(--ease-out);
+  }
+
+  .field-error {
+    margin-top: 7px;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    color: var(--risk);
+  }
+
+  .field-error:empty {
+    display: none;
+  }
+
+  /* Interest choices */
+  .interest-fieldset {
+    min-width: 0;
+    margin: 26px 0 24px;
+    padding: 0;
+    border: 0;
+  }
+
+  .interest-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .choice {
+    position: relative;
+    display: block;
+    cursor: pointer;
+  }
+
+  .choice input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .choice-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    height: 100%;
+    padding: 13px 14px;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: inset 0 0 0 1px var(--line-2);
+    transition:
+      box-shadow 0.25s ease,
+      background-color 0.25s ease;
+  }
+
+  .choice:hover .choice-box {
+    box-shadow: inset 0 0 0 1px var(--ink-3);
+  }
+
+  .choice-dot {
+    position: relative;
+    flex: none;
+    width: 18px;
+    height: 18px;
+    margin-top: 1px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1.5px var(--line-2);
+    transition: box-shadow 0.25s ease;
+  }
+
+  .choice-dot::after {
+    content: '';
+    position: absolute;
+    inset: 4.5px;
+    border-radius: 50%;
+    background: var(--signal);
+    transform: scale(0);
+    transition: transform 0.35s var(--ease-spring);
+  }
+
+  .choice-text {
+    display: grid;
+    gap: 2px;
+  }
+
+  .choice-name {
+    font-size: 0.94rem;
+    font-weight: 580;
+  }
+
+  .choice-hint {
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .choice input:checked + .choice-box {
+    background: #f4f5ff;
+    box-shadow: inset 0 0 0 1.5px var(--signal);
+  }
+
+  .choice input:checked + .choice-box .choice-dot {
+    box-shadow: inset 0 0 0 1.5px var(--signal);
+  }
+
+  .choice input:checked + .choice-box .choice-dot::after {
+    transform: scale(1);
+  }
+
+  .choice input:focus-visible + .choice-box {
+    box-shadow:
+      inset 0 0 0 1.5px var(--signal),
+      0 0 0 4px rgb(35 64 255 / 0.18);
+  }
+
+  .interest-fieldset[aria-invalid='true'] .choice-box {
+    box-shadow: inset 0 0 0 1.5px var(--risk);
+  }
+
+  /* Consent */
+  .honeypot-field {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+    clip: rect(1px, 1px, 1px, 1px) !important;
+    white-space: nowrap !important;
+  }
+
+  .consent-field {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+
+  .consent-field input {
+    appearance: none;
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    margin: 1px 0 0;
+    border-radius: 7px;
+    background: #fff;
+    box-shadow: inset 0 0 0 1.5px var(--line-2);
+    cursor: pointer;
+    transition:
+      background-color 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+
+  .consent-field input::after {
+    content: '';
+    width: 10px;
+    height: 6px;
+    margin-top: -2px;
+    border: solid #fff;
+    border-width: 0 0 2px 2px;
+    transform: rotate(-45deg) scale(0);
+    transition: transform 0.35s var(--ease-spring);
+  }
+
+  .consent-field input:checked {
+    background: var(--signal);
+    box-shadow: none;
+  }
+
+  .consent-field input:checked::after {
+    transform: rotate(-45deg) scale(1);
+  }
+
+  .consent-field input:focus-visible {
+    outline: none;
+    box-shadow:
+      inset 0 0 0 1.5px var(--signal),
+      0 0 0 4px rgb(35 64 255 / 0.18);
+  }
+
+  .consent-field input[aria-invalid='true'] {
+    box-shadow: inset 0 0 0 1.5px var(--risk);
+  }
+
+  .consent-field label {
+    display: block;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--ink-3);
+    cursor: pointer;
+  }
+
+  .form-status {
+    margin-top: 20px;
+    padding: 13px 16px;
+    border-radius: 12px;
+    background: #fff1ed;
+    box-shadow: inset 3px 0 0 var(--risk);
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: #7c2412;
+  }
+
+  .form-status:focus-visible {
+    outline: 2px solid var(--risk);
+    outline-offset: 3px;
+  }
+
+  .form-submit {
+    margin-top: 24px;
+    min-width: 250px;
+    justify-content: space-between;
+  }
+
+  .form-submit.is-loading .btn-icon :global(svg) {
+    animation: nudge 0.9s var(--ease-in-out) infinite;
+  }
+
+  @keyframes nudge {
+    50% {
+      transform: translateX(4px);
+    }
+  }
+
+  /* Success */
+  .lead-success {
+    display: grid;
+    align-content: center;
+    justify-items: start;
+    gap: 16px;
+    min-height: 560px;
+    max-width: 34rem;
+    margin: 0 auto;
+  }
+
+  .lead-success:focus-visible {
+    outline: 2px solid var(--signal);
+    outline-offset: 8px;
+  }
+
+  .success-mark {
+    width: 72px;
+    height: 72px;
+    margin-bottom: 12px;
+  }
+
+  .success-ring,
+  .success-check {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 1 1;
+  }
+
+  .success-ring {
+    stroke: var(--signal-soft);
+    stroke-width: 3;
+  }
+
+  .success-check {
+    stroke: var(--signal);
+    stroke-width: 4;
+  }
+
+  .lead-success:not([hidden]) .success-ring {
+    animation: draw 0.9s var(--ease-out) both;
+  }
+
+  .lead-success:not([hidden]) .success-check {
+    animation: draw 0.7s var(--ease-out) 0.35s both;
+  }
+
+  @keyframes draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .lead-success h3 {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 3.4vw, 2.8rem);
+    font-weight: 380;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+
+  .lead-success > p:last-child {
+    color: var(--ink-3);
+  }
+
+  @media (max-width: 1080px) {
+    .early-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .early-copy {
+      position: static;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .form-grid,
+    .interest-options {
+      grid-template-columns: 1fr;
+    }
+
+    .form-field-wide {
+      grid-column: auto;
+    }
+
+    .form-submit {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .form-intro {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    .lead-success {
+      min-height: 420px;
+    }
+  }
+</style>

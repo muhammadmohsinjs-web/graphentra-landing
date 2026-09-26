@@ -1,0 +1,14 @@
+---
+interface Props {
+  index: string;
+  label: string;
+}
+
+const { index, label } = Astro.props;
+---
+
+<p class="kicker" data-reveal>
+  <span class="kicker-index">§{index}</span>
+  <span class="kicker-rule" aria-hidden="true" data-draw></span>
+  <span>{label}</span>
+</p>

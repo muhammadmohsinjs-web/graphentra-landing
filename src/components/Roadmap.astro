@@ -1,0 +1,203 @@
+---
+import Kicker from './Kicker.astro';
+
+const stages = [
+  {
+    when: 'Now',
+    status: 'In development',
+    title: 'Explainable change-impact analysis',
+    body: 'The first release focus. TypeScript and JavaScript applications first, with framework support introduced in stages.',
+    kind: 'now'
+  },
+  {
+    when: 'Alongside',
+    status: 'Being built',
+    title: 'Isolated browser & API verification',
+    body: 'Browser checks planned around Playwright, API checks, and adapters for runners such as pytest — in disposable environments.',
+    kind: 'next'
+  },
+  {
+    when: 'Later',
+    status: 'Longer term',
+    title: 'Broader language support',
+    body: 'Part of the long-term architecture, extending beyond the initial TypeScript and JavaScript focus.',
+    kind: 'later'
+  }
+];
+---
+
+<section class="section roadmap" aria-labelledby="roadmap-title" data-roadmap>
+  <div class="container">
+    <div class="roadmap-head">
+      <div>
+        <Kicker index="06" label="Where we are" />
+        <h2 class="display h-section" id="roadmap-title" data-split>Honest about <em>what exists today.</em></h2>
+      </div>
+      <p class="lede" data-reveal>The examples on this page illustrate the intended experience. Here is the order it is being built in.</p>
+    </div>
+
+    <ol class="stages" role="list">
+      <li class="stages-line" aria-hidden="true"><span data-roadmap-line></span></li>
+      {
+        stages.map(stage => (
+          <li class:list={['stage', `is-${stage.kind}`]} data-stage>
+            <span class="stage-node" aria-hidden="true"></span>
+            <p class="stage-when">
+              <span class="stage-when-main">{stage.when}</span>
+              <span class="label">{stage.status}</span>
+            </p>
+            <h3 class="stage-title">{stage.title}</h3>
+            <p class="body-copy">{stage.body}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .roadmap {
+    padding-top: 0;
+  }
+
+  .roadmap-head {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    gap: 28px clamp(32px, 6vw, 96px);
+    align-items: end;
+    margin-bottom: clamp(56px, 7vw, 96px);
+    padding-top: clamp(72px, 9vw, 128px);
+    border-top: 1px solid var(--line);
+  }
+
+  .roadmap-head :global(.kicker) {
+    margin-bottom: clamp(22px, 2.6vw, 32px);
+  }
+
+  .stages {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(24px, 4vw, 64px);
+  }
+
+  .stages-line {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 0;
+    height: 1px;
+    background: repeating-linear-gradient(90deg, var(--line-2) 0 4px, transparent 4px 9px);
+  }
+
+  .stages-line span {
+    position: absolute;
+    inset: 0;
+    background: var(--signal);
+    transform-origin: left center;
+    transform: scaleX(var(--progress, 0.34));
+  }
+
+  .stage {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-top: 48px;
+  }
+
+  .stage-node {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 21px;
+    height: 21px;
+    border-radius: 50%;
+    background: var(--paper);
+    box-shadow: inset 0 0 0 1.5px var(--line-2);
+  }
+
+  .stage.is-now .stage-node {
+    background: var(--signal);
+    box-shadow: 0 0 0 6px var(--signal-soft);
+  }
+
+  .stage.is-next .stage-node {
+    box-shadow: inset 0 0 0 1.5px var(--signal);
+  }
+
+  .stage.is-next .stage-node::after {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border-radius: 50%;
+    background: var(--signal);
+  }
+
+  .stage.is-later .stage-node {
+    box-shadow: none;
+    border: 1.5px dashed var(--line-2);
+  }
+
+  .stage-when {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+  }
+
+  .stage-when-main {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-style: italic;
+    font-weight: 380;
+    letter-spacing: -0.02em;
+  }
+
+  .stage.is-now .stage-when-main {
+    color: var(--signal);
+  }
+
+  .stage-title {
+    font-size: 1.3rem;
+    font-weight: 580;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+
+  @media (max-width: 1080px) {
+    .roadmap-head {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 820px) {
+    .stages {
+      grid-template-columns: 1fr;
+      gap: 40px;
+      padding-left: 44px;
+    }
+
+    .stages-line {
+      top: 10px;
+      bottom: 0;
+      left: 10px;
+      right: auto;
+      width: 1px;
+      height: auto;
+      background: repeating-linear-gradient(180deg, var(--line-2) 0 4px, transparent 4px 9px);
+    }
+
+    .stages-line span {
+      transform-origin: top center;
+      transform: scaleY(var(--progress, 0.34));
+    }
+
+    .stage {
+      padding-top: 0;
+    }
+
+    .stage-node {
+      left: -44px;
+    }
+  }
+</style>

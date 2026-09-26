@@ -1,0 +1,41 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Hero from '../components/Hero.astro';
+import Marquee from '../components/Marquee.astro';
+import Problem from '../components/Problem.astro';
+import HowItWorks from '../components/HowItWorks.astro';
+import Platform from '../components/Platform.astro';
+import Principles from '../components/Principles.astro';
+import Teams from '../components/Teams.astro';
+import Roadmap from '../components/Roadmap.astro';
+import Faq from '../components/Faq.astro';
+import EarlyAccess from '../components/EarlyAccess.astro';
+import Footer from '../components/Footer.astro';
+
+const title = 'Graphentra — See how far every code change reaches';
+const description =
+  'Graphentra traces a code change through your dependency graph to the screens, endpoints and flows it can reach — then helps your team verify exactly those, with evidence you can review. In development; early access open.';
+---
+
+<Base title={title} description={description}>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <Header />
+  <main id="main">
+    <Hero />
+    <Marquee />
+    <Problem />
+    <HowItWorks />
+    <Platform />
+    <Principles />
+    <Teams />
+    <Roadmap />
+    <Faq />
+    <EarlyAccess />
+  </main>
+  <Footer />
+</Base>
+
+<script>
+  import '../scripts/main';
+</script>

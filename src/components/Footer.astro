@@ -1,0 +1,200 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+
+const links = [
+  { href: '#product', label: 'Product' },
+  { href: '#how', label: 'How it works' },
+  { href: '#principles', label: 'Principles' },
+  { href: '#faq', label: 'FAQ' },
+  { href: '#early-access', label: 'Early access' }
+];
+---
+
+<footer class="footer" aria-labelledby="footer-title">
+  <div class="container">
+    <div class="footer-top">
+      <h2 class="display footer-title" id="footer-title" data-split>Every change has a story. <em>See where it leads.</em></h2>
+      <a class="btn btn-light footer-replay" href="#top" data-replay data-magnetic>
+        <span>Replay the example</span>
+        <span class="btn-icon" aria-hidden="true"><Icon name="arrow" /></span>
+      </a>
+    </div>
+
+    <div class="footer-mid">
+      <div class="footer-brand">
+        <Logo />
+        <p>Change intelligence. Focused verification.</p>
+      </div>
+      <nav aria-label="Footer">
+        <p class="label">Explore</p>
+        <ul role="list">
+          {
+            links.map(link => (
+              <li>
+                <a class="link" href={link.href}>
+                  {link.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+      <div class="footer-status">
+        <p class="label">Status</p>
+        <p><span class="pulse-dot" aria-hidden="true"></span>In development</p>
+        <p>Early access open</p>
+      </div>
+    </div>
+
+    <div class="footer-mark" aria-hidden="true">
+      <p class="footer-mark-text" data-footer-mark>Graphentra</p>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© {new Date().getFullYear()} Graphentra</span>
+      <span>Graphentra.com</span>
+      <span>Built around evidence.</span>
+      <a class="link" href="#top">Back to top</a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    position: relative;
+    overflow: hidden;
+    overflow: clip;
+    background: var(--night);
+    color: var(--night-text);
+    padding-top: clamp(88px, 11vw, 160px);
+  }
+
+  .footer :global(.logo) {
+    color: var(--night-text);
+  }
+
+  .footer :global(.logo-core) {
+    fill: var(--signal-night);
+  }
+
+  .footer-top {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 32px 48px;
+    padding-bottom: clamp(56px, 7vw, 96px);
+    border-bottom: 1px solid var(--night-line);
+  }
+
+  .footer-title {
+    font-size: clamp(2.6rem, 5.6vw, 5.5rem);
+    max-width: 16ch;
+  }
+
+  .footer-title em {
+    color: var(--signal-night);
+  }
+
+  .footer-mid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+    gap: 40px;
+    padding-block: clamp(40px, 5vw, 64px);
+  }
+
+  .footer-brand {
+    display: grid;
+    gap: 14px;
+    align-content: start;
+  }
+
+  .footer-brand p,
+  .footer-status p:not(.label) {
+    color: var(--night-muted);
+  }
+
+  .footer .label {
+    color: var(--night-muted);
+    margin-bottom: 14px;
+  }
+
+  .footer nav ul {
+    display: grid;
+    gap: 8px;
+  }
+
+  .footer nav a {
+    color: var(--night-text);
+  }
+
+  .footer-status p:not(.label) {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .footer-status .pulse-dot {
+    background: var(--signal-night);
+  }
+
+  /* The wordmark is sized from the container's own width (cqi), not the viewport, so the
+     whole word always spans the content column exactly — at any screen size, with or
+     without a classic scrollbar. 21.3cqi leaves ~0.7% slack after the final "a"'s tail. */
+  .footer-mark {
+    container-type: inline-size;
+  }
+
+  .footer-mark-text {
+    font-family: var(--font-display);
+    font-size: min(17.4vw, 18rem);
+    font-size: 21.3cqi;
+    font-weight: 360;
+    letter-spacing: -0.05em;
+    line-height: 1;
+    margin: 0 0 0 -0.04em;
+    padding-top: 0.02em;
+    color: var(--night-text);
+    /* Also the reveal mask for the rising letters: anything below the box is hidden. */
+    -webkit-mask-image: linear-gradient(180deg, #000 25%, rgb(0 0 0 / 0.06) 96%);
+    mask-image: linear-gradient(180deg, #000 25%, rgb(0 0 0 / 0.06) 96%);
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  .footer-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px 28px;
+    padding-block: 24px 32px;
+    border-top: 1px solid var(--night-line);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    color: var(--night-muted);
+  }
+
+  .footer-bottom a {
+    color: var(--night-text);
+  }
+
+  @media (max-width: 900px) {
+    .footer-top {
+      grid-template-columns: 1fr;
+      align-items: start;
+    }
+
+    .footer-replay {
+      justify-self: start;
+    }
+
+    .footer-mid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .footer-brand {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

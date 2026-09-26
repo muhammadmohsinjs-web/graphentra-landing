@@ -1,0 +1,115 @@
+---
+const questions = ['What changed?', 'What could it reach?', 'What should we verify?', 'What did we actually check?'];
+---
+
+<section class="marquee" aria-label="Built around four questions">
+  <ol class="sr-only">
+    {questions.map(question => <li>{question}</li>)}
+  </ol>
+  <div class="marquee-track" aria-hidden="true" data-marquee>
+    {
+      [0, 1].map(() => (
+        <div class="marquee-group">
+          {questions.map((question, index) => (
+            <span class="marquee-item">
+              <span class="marquee-index">{String(index + 1).padStart(2, '0')}</span>
+              <span class="marquee-text">{question}</span>
+              <span class="marquee-node"></span>
+            </span>
+          ))}
+        </div>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .marquee {
+    position: relative;
+    overflow: hidden;
+    background: var(--ink);
+    color: var(--night-text);
+    padding-block: clamp(22px, 3vw, 34px);
+  }
+
+  .marquee::before,
+  .marquee::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 1;
+    width: clamp(40px, 10vw, 160px);
+    pointer-events: none;
+  }
+
+  .marquee::before {
+    left: 0;
+    background: linear-gradient(90deg, var(--ink), transparent);
+  }
+
+  .marquee::after {
+    right: 0;
+    background: linear-gradient(-90deg, var(--ink), transparent);
+  }
+
+  .marquee-track {
+    display: flex;
+    width: max-content;
+  }
+
+  .marquee-group {
+    display: flex;
+    flex: none;
+  }
+
+  .marquee-item {
+    display: inline-flex;
+    align-items: center;
+    gap: clamp(14px, 1.6vw, 22px);
+    padding-right: clamp(28px, 3.2vw, 48px);
+    white-space: nowrap;
+  }
+
+  .marquee-index {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    color: var(--signal-night);
+    translate: 0 -0.9em;
+  }
+
+  .marquee-text {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: clamp(2rem, 4.4vw, 4rem);
+    font-weight: 330;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+
+  .marquee-node {
+    width: 12px;
+    height: 12px;
+    margin-left: clamp(14px, 2vw, 30px);
+    border-radius: 3px;
+    background: var(--signal);
+    box-shadow: 0 0 0 5px rgb(35 64 255 / 0.25);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .marquee-track {
+      animation: marquee 56s linear infinite;
+    }
+
+    .marquee:hover .marquee-track {
+      animation-play-state: paused;
+    }
+  }
+
+  @keyframes marquee {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+</style>

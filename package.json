@@ -1,20 +1,30 @@
 {
   "name": "graphentra-landing",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "engines": {
-    "node": ">=22"
+    "node": ">=22.12.0"
   },
   "scripts": {
-    "lint": "node --check app.js && node --check worker/index.js && node --check worker/internal/leads.js && node --check tests/leads.test.js && node --check scripts/build.mjs",
-    "typecheck": "node --check app.js && node --check worker/index.js && node --check worker/internal/leads.js",
+    "dev": "astro dev",
+    "preview": "npm run build && wrangler dev",
+    "build": "astro build && node scripts/verify-build.mjs",
+    "lint": "node --check worker/index.js && node --check worker/internal/leads.js && node --check tests/leads.test.js && node --check scripts/verify-build.mjs && node --check astro.config.mjs",
+    "typecheck": "astro check && node --check worker/index.js && node --check worker/internal/leads.js",
     "test": "node --test",
-    "build": "node scripts/build.mjs",
-    "prepare": "node scripts/build.mjs",
-    "deploy": "npm run build && wrangler deploy",
-    "dev": "wrangler dev"
+    "prepare": "npm run build",
+    "deploy": "npm run build && wrangler deploy"
+  },
+  "dependencies": {
+    "@fontsource-variable/geist": "^5.3.0",
+    "@fontsource-variable/geist-mono": "^5.3.0",
+    "@fontsource-variable/newsreader": "^5.3.0",
+    "astro": "^7.3.5",
+    "gsap": "^3.15.0"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "typescript": "^6.0.3",
     "wrangler": "^4.129.0"
   },
   "allowScripts": {
