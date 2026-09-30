@@ -1,0 +1,87 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import SectionHead from '../components/SectionHead.astro';
+import TierCard from '../components/TierCard.astro';
+import Faq from '../components/Faq.astro';
+import { pricingFaq } from '../data/faq';
+---
+
+<PageLayout page="pricing" cta={{ interest: 'Paid pilot', title: 'Talk to us about a pilot.', text: 'Choose the interest that fits. We explain what is involved before anything is agreed.', label: 'Discuss a pilot' }}>
+  <PageHeader index="01" kicker="Pricing">
+    <Fragment slot="title">Early access, <em>not a price list.</em></Fragment>
+    Graphentra is pre-launch. There is no public price list yet, and paid plans will be announced at launch. This is how we are working with early teams.
+  </PageHeader>
+
+  <section class="section tiers-section" id="tiers" aria-labelledby="tiers-title">
+    <div class="container">
+      <SectionHead index="02" kicker="How we work with early teams" id="tiers-title">
+        <Fragment slot="title">Three ways <em>to start.</em></Fragment>
+        Two are open now. The third is planned for launch and has no price yet.
+      </SectionHead>
+
+      <div class="tier-grid">
+        <TierCard
+          name="Design partner"
+          availability="Open now"
+          open
+          forWhom="For a team that wants to shape what is built first."
+          points={[
+            'Hands-on onboarding and a direct line to the people building Graphentra.',
+            'In return, honest feedback on what was useful, what was noise and what it missed.',
+            'Choose “Design partnership” in the early-access form.'
+          ]}
+          interest="Design partnership"
+          cta="Become a design partner"
+        />
+        <TierCard
+          name="Paid pilot"
+          availability="Open now"
+          open
+          forWhom="For a team that wants to try Graphentra on its own repository."
+          points={[
+            'Agreed with you in advance, on your own repository.',
+            'We explain what is involved before anything is agreed.',
+            'Choose “Paid pilot” in the early-access form and tell us what you would like to try.'
+          ]}
+          interest="Paid pilot"
+          cta="Discuss a pilot"
+        />
+        <TierCard
+          name="Team plans"
+          availability="Planned for launch"
+          open={false}
+          forWhom="For teams that want to run Graphentra on every pull request."
+          points={[
+            'Paid plans will be announced at launch.',
+            'Pricing will be worked out with pilot teams first.',
+            'Ask for product updates and we will tell you when there is something to share.'
+          ]}
+          interest="Product updates"
+          cta="Get product updates"
+        />
+      </div>
+    </div>
+  </section>
+
+  <Faq items={pricingFaq} index="03" kicker="Questions about early access" id="pricing-faq" />
+</PageLayout>
+
+<style>
+  .tiers-section {
+    padding-top: 0;
+  }
+
+  .tier-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    align-items: stretch;
+  }
+
+  @media (max-width: 1000px) {
+    .tier-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

@@ -1,0 +1,107 @@
+---
+import CapabilityItem from './CapabilityItem.astro';
+import StatusChip from './StatusChip.astro';
+import { notYet, stackRows } from '../data/capabilities';
+
+/** A summary that every row repeats says nothing new, so it is shown once (in the column note), not per row. */
+const counts = new Map<string, number>();
+for (const row of stackRows) counts.set(row.summary, (counts.get(row.summary) ?? 0) + 1);
+const repeated = (summary: string) => (counts.get(summary) ?? 0) > 1;
+---
+
+<div class="stack" id="stack">
+  <div class="stack-col">
+    <h3 class="stack-title">Targeted for the MVP</h3>
+    <p class="stack-lede">Support for each is in development and not yet certified. A heuristic map of these frameworks exists in the prototype.</p>
+    <ul class="stack-list" role="list">
+      {stackRows.map(row => <CapabilityItem id={row.id} summary={!repeated(row.summary)} note={false} />)}
+    </ul>
+  </div>
+  <div class="stack-col">
+    <h3 class="stack-title">Not supported yet</h3>
+    <p class="stack-lede">Limitations, listed so you do not have to find them out.</p>
+    <ul class="stack-list" role="list">
+      {
+        notYet.map(item => (
+          <li class="nope" data-not-yet={item.id}>
+            <div class="nope-head">
+              <span class="nope-title">{item.title}</span>
+              <StatusChip status="not-yet" />
+            </div>
+            <p class="nope-note">{item.note}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</div>
+
+<style>
+  .stack {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  .stack-col {
+    padding: clamp(18px, 2.4vw, 30px);
+    border-radius: var(--r-lg);
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.035), rgb(255 255 255 / 0.01)), var(--surface);
+    box-shadow: inset 0 0 0 1px var(--line-2);
+  }
+
+  .stack-col:first-child {
+    box-shadow: inset 0 0 0 1px rgb(124 196 255 / 0.35);
+  }
+
+  .stack-title {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 630;
+    letter-spacing: -0.04em;
+  }
+
+  .stack-lede {
+    margin: 6px 0 18px;
+    color: var(--text-2);
+    font-size: 0.95rem;
+    text-wrap: pretty;
+  }
+
+  .nope {
+    display: grid;
+    gap: 6px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .nope:first-child {
+    border-top: 1px solid var(--line);
+  }
+
+  .nope-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+  }
+
+  .nope-title {
+    font-size: 1rem;
+    font-weight: 580;
+    letter-spacing: -0.01em;
+  }
+
+  .nope-note {
+    font-size: 0.9rem;
+    color: var(--text-2);
+    text-wrap: pretty;
+  }
+
+  @media (min-width: 900px) {
+    .stack {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

@@ -1,41 +1,29 @@
 ---
 import Kicker from './Kicker.astro';
+import { homeFaq, type FaqItem } from '../data/faq';
 
-const faqs = [
-  {
-    q: 'Is Graphentra available today?',
-    a: 'Graphentra is in development. The first release focuses on explainable change-impact analysis, and isolated browser and API verification is being built alongside it. The examples on this page illustrate the intended experience.'
-  },
-  {
-    q: 'Do we need an existing test suite?',
-    a: 'Not for impact analysis. It is designed to give you a useful verification scope even when you rely on manual QA. Automated execution will use supported existing tests and approved scenarios where available — anything without a check stays explicitly unverified.'
-  },
-  {
-    q: 'Does an affected area mean a bug exists?',
-    a: 'No. It means there is a connection to changed code that may deserve attention. Tests and human review establish whether the observed behaviour matches the expected behaviour.'
-  },
-  {
-    q: 'Which technologies will be supported first?',
-    a: 'The initial focus is TypeScript and JavaScript applications, with framework support introduced in stages. Browser verification is planned around Playwright, alongside API checks and adapters for test runners such as pytest. Broader language support is part of the longer-term architecture.'
-  },
-  {
-    q: 'How will automated verification stay isolated?',
-    a: 'The planned execution layer uses disposable test environments, scoped credentials, approved actions and run limits. Test results will identify the build and environment used. Production systems are outside the initial execution scope.'
-  }
-];
+interface Props {
+  items?: FaqItem[];
+  index?: string;
+  kicker?: string;
+  id?: string;
+}
+
+const { items = homeFaq, index = '09', kicker = 'A few good questions', id = 'faq' } = Astro.props;
+const faqs = items;
 ---
 
-<section class="section faq" id="faq" aria-labelledby="faq-title">
+<section class="section faq" id={id} aria-labelledby={`${id}-title`}>
   <div class="container faq-grid">
     <div class="faq-head">
-      <Kicker index="07" label="A few good questions" />
-      <h2 class="display h-section" id="faq-title" data-split>The details <em>that matter.</em></h2>
-      <p class="body-copy faq-note" data-reveal>
-        Something else on your mind? Ask it in the <a class="link" href="#early-access">early-access form</a> — we review every submission.
+      <Kicker index={index} label={kicker} />
+      <h2 class="display h-section" id={`${id}-title`}>The details <em>that matter.</em></h2>
+      <p class="body-copy faq-note">
+        Something else on your mind? Ask it in the <a class="link" href="/#early-access">early-access form</a>. We read every request.
       </p>
     </div>
 
-    <div class="faq-list" data-reveal>
+    <div class="faq-list">
       {
         faqs.map((faq, index) => (
           <details class="faq-item" data-faq>
@@ -46,6 +34,11 @@ const faqs = [
             </summary>
             <div class="faq-a" data-faq-body>
               <p>{faq.a}</p>
+              {faq.more && (
+                <p class="faq-more">
+                  <a class="link" href={faq.more.href}>{faq.more.label}</a>
+                </p>
+              )}
             </div>
           </details>
         ))
@@ -57,20 +50,18 @@ const faqs = [
 <style>
   .faq-grid {
     display: grid;
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-    gap: 48px clamp(32px, 6vw, 110px);
+    grid-template-columns: minmax(0, 1fr);
+    gap: 36px;
     align-items: start;
   }
 
   .faq-head {
     display: grid;
-    gap: clamp(22px, 2.6vw, 32px);
-    position: sticky;
-    top: calc(var(--header-h) + 40px);
+    gap: 22px;
   }
 
   .faq-head .h-section {
-    max-width: 10ch;
+    max-width: 11ch;
   }
 
   .faq-note {
@@ -78,27 +69,36 @@ const faqs = [
   }
 
   .faq-note .link {
-    color: var(--signal);
+    color: var(--volt);
     background-size: 100% 1px;
   }
 
   .faq-list {
-    border-top: 1px solid var(--ink);
+    display: grid;
+    gap: 10px;
   }
 
   .faq-item {
-    border-bottom: 1px solid var(--line-2);
+    border-radius: var(--r-md);
+    background: rgb(255 255 255 / 0.02);
+    box-shadow: inset 0 0 0 1px var(--line);
+    transition: background-color 0.35s var(--ease-out), box-shadow 0.35s var(--ease-out);
+  }
+
+  .faq-item[open]:not(.is-closing) {
+    background: linear-gradient(180deg, rgb(200 255 62 / 0.05), rgb(255 255 255 / 0.015));
+    box-shadow: inset 0 0 0 1px var(--volt-line);
   }
 
   .faq-summary {
     display: grid;
-    grid-template-columns: 44px 1fr 36px;
+    grid-template-columns: 34px 1fr 32px;
     align-items: center;
     gap: 12px;
-    padding: 26px 0;
+    padding: 20px 18px 20px 20px;
     cursor: pointer;
     list-style: none;
-    border-radius: 4px;
+    border-radius: var(--r-md);
   }
 
   .faq-summary::-webkit-details-marker {
@@ -106,33 +106,32 @@ const faqs = [
   }
 
   .faq-index {
-    font-size: 0.75rem;
-    color: var(--signal);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--volt);
   }
 
   .faq-q {
-    font-size: clamp(1.15rem, 1.6vw, 1.45rem);
-    font-weight: 560;
+    font-size: clamp(1.05rem, 1.4vw, 1.25rem);
+    font-weight: 580;
     letter-spacing: -0.02em;
     line-height: 1.3;
-    transition: color 0.3s ease;
+    transition: color 0.35s var(--ease-out);
   }
 
   .faq-summary:hover .faq-q {
-    color: var(--signal);
+    color: var(--volt);
   }
 
   .faq-icon {
     position: relative;
     justify-self: end;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: var(--surface-2);
     box-shadow: inset 0 0 0 1px var(--line-2);
-    transition:
-      background-color 0.4s ease,
-      box-shadow 0.4s ease,
-      transform 0.6s var(--ease-out);
+    transition: background-color 0.35s var(--ease-out), box-shadow 0.35s var(--ease-out), transform 0.4s var(--ease-out);
   }
 
   .faq-icon::before,
@@ -145,10 +144,8 @@ const faqs = [
     height: 1.5px;
     margin: -0.75px 0 0 -6px;
     border-radius: 2px;
-    background: var(--ink);
-    transition:
-      transform 0.5s var(--ease-out),
-      background-color 0.4s ease;
+    background: var(--text);
+    transition: transform 0.4s var(--ease-out), background-color 0.35s var(--ease-out);
   }
 
   .faq-icon::after {
@@ -156,14 +153,14 @@ const faqs = [
   }
 
   .faq-item[open]:not(.is-closing) .faq-icon {
-    background: var(--ink);
+    background: var(--volt);
     box-shadow: none;
     transform: rotate(180deg);
   }
 
   .faq-item[open]:not(.is-closing) .faq-icon::before,
   .faq-item[open]:not(.is-closing) .faq-icon::after {
-    background: var(--paper);
+    background: var(--volt-ink);
   }
 
   .faq-item[open]:not(.is-closing) .faq-icon::after {
@@ -175,36 +172,33 @@ const faqs = [
   }
 
   .faq-a p {
-    padding: 0 48px 30px 56px;
-    max-width: 44rem;
-    color: var(--ink-3);
-    font-size: 1.02rem;
+    padding: 0 22px 22px 66px;
+    max-width: 46rem;
+    color: var(--text-2);
+    font-size: 1rem;
     text-wrap: pretty;
   }
 
-  @media (max-width: 960px) {
+  .faq-a .faq-more {
+    padding-top: 0;
+    margin-top: -10px;
+  }
+
+  @media (min-width: 960px) {
     .faq-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+      gap: clamp(32px, 5vw, 80px);
     }
 
     .faq-head {
-      position: static;
+      position: sticky;
+      top: calc(var(--header-h) + 32px);
     }
   }
 
   @media (max-width: 560px) {
-    .faq-summary {
-      grid-template-columns: 32px 1fr 32px;
-      padding: 22px 0;
-    }
-
-    .faq-icon {
-      width: 32px;
-      height: 32px;
-    }
-
     .faq-a p {
-      padding: 0 0 26px 44px;
+      padding-left: 20px;
     }
   }
 </style>

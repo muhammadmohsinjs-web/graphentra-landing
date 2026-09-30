@@ -1,0 +1,49 @@
+---
+import SectionHead from './SectionHead.astro';
+import StatCard from './StatCard.astro';
+import { marketStats } from '../data/site';
+
+interface Props {
+  index?: string;
+}
+
+const { index = '04' } = Astro.props;
+---
+
+<section class="section why-now" id="why-now" aria-labelledby="why-now-title">
+  <div class="container">
+    <SectionHead index={index} kicker="Why now" id="why-now-title">
+      <Fragment slot="title">AI writes the code. <em>Someone still has to know its reach.</em></Fragment>
+      More code is being written with AI. Here is what four independent studies found about what happens next, quoted as published.
+    </SectionHead>
+
+    <div class="stat-grid">
+      {marketStats.map((stat, i) => <StatCard stat={stat} index={i} />)}
+    </div>
+
+    <p class="why-note">
+      Figures are from the sources named, in the year shown. They describe developers and organisations in general, not results from Graphentra.
+    </p>
+  </div>
+</section>
+
+<style>
+  .stat-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .why-note {
+    max-width: 46rem;
+    margin-top: 22px;
+    font-size: 0.86rem;
+    color: var(--text-3);
+  }
+
+  @media (min-width: 760px) {
+    .stat-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

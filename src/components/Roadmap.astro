@@ -1,203 +1,161 @@
 ---
-import Kicker from './Kicker.astro';
+import SectionHead from './SectionHead.astro';
+import StatusChip from './StatusChip.astro';
+import { byStatus, horizons } from '../data/capabilities';
+import { earlyAccessHref } from '../data/site';
 
-const stages = [
-  {
-    when: 'Now',
-    status: 'In development',
-    title: 'Explainable change-impact analysis',
-    body: 'The first release focus. TypeScript and JavaScript applications first, with framework support introduced in stages.',
-    kind: 'now'
-  },
-  {
-    when: 'Alongside',
-    status: 'Being built',
-    title: 'Isolated browser & API verification',
-    body: 'Browser checks planned around Playwright, API checks, and adapters for runners such as pytest — in disposable environments.',
-    kind: 'next'
-  },
-  {
-    when: 'Later',
-    status: 'Longer term',
-    title: 'Broader language support',
-    body: 'Part of the long-term architecture, extending beyond the initial TypeScript and JavaScript focus.',
-    kind: 'later'
-  }
-];
+/** Teaser for the home page. The full board is on /roadmap/. Everything derives from capabilities.ts. */
+const stages = horizons.map(horizon => {
+  const items = byStatus(horizon.status);
+  return { ...horizon, items: items.slice(0, 3), more: Math.max(0, items.length - 3) };
+});
 ---
 
-<section class="section roadmap" aria-labelledby="roadmap-title" data-roadmap>
+<section class="section roadmap" id="roadmap" aria-labelledby="roadmap-title" data-roadmap>
   <div class="container">
-    <div class="roadmap-head">
-      <div>
-        <Kicker index="06" label="Where we are" />
-        <h2 class="display h-section" id="roadmap-title" data-split>Honest about <em>what exists today.</em></h2>
-      </div>
-      <p class="lede" data-reveal>The examples on this page illustrate the intended experience. Here is the order it is being built in.</p>
-    </div>
+    <SectionHead index="08" kicker="Where we are" id="roadmap-title">
+      <Fragment slot="title">Honest about <em>what exists today.</em></Fragment>
+      Graphentra is pre-launch. A prototype of the analysis engine exists. The examples on this site illustrate the intended experience.
+    </SectionHead>
 
     <ol class="stages" role="list">
-      <li class="stages-line" aria-hidden="true"><span data-roadmap-line></span></li>
       {
-        stages.map(stage => (
-          <li class:list={['stage', `is-${stage.kind}`]} data-stage>
-            <span class="stage-node" aria-hidden="true"></span>
+        stages.map((stage, index) => (
+          <li class:list={['stage', 'panel', `is-${stage.id}`]} data-stage data-reveal style={`--i:${index}`}>
+            <div class="stage-rail" aria-hidden="true"><span class="stage-node"></span><span class="stage-line"></span></div>
             <p class="stage-when">
-              <span class="stage-when-main">{stage.when}</span>
-              <span class="label">{stage.status}</span>
+              <span class="stage-when-main">{stage.label}</span>
+              <StatusChip status={stage.status} />
             </p>
-            <h3 class="stage-title">{stage.title}</h3>
-            <p class="body-copy">{stage.body}</p>
+            <h3 class="stage-title">{stage.caption}</h3>
+            <ul class="stage-list" role="list">
+              {stage.items.map(item => <li>{item.title}</li>)}
+              {stage.more > 0 && <li class="stage-more">and {stage.more} more</li>}
+            </ul>
           </li>
         ))
       }
     </ol>
+
+    <p class="roadmap-link" data-reveal>
+      <a class="link" href="/roadmap/">See the full roadmap</a>
+      <span class="roadmap-sep" aria-hidden="true">·</span>
+      <a class="link" href={earlyAccessHref}>Request early access</a>
+    </p>
   </div>
 </section>
 
 <style>
-  .roadmap {
-    padding-top: 0;
-  }
-
-  .roadmap-head {
-    display: grid;
-    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
-    gap: 28px clamp(32px, 6vw, 96px);
-    align-items: end;
-    margin-bottom: clamp(56px, 7vw, 96px);
-    padding-top: clamp(72px, 9vw, 128px);
-    border-top: 1px solid var(--line);
-  }
-
-  .roadmap-head :global(.kicker) {
-    margin-bottom: clamp(22px, 2.6vw, 32px);
-  }
-
   .stages {
-    position: relative;
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: clamp(24px, 4vw, 64px);
-  }
-
-  .stages-line {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    right: 0;
-    height: 1px;
-    background: repeating-linear-gradient(90deg, var(--line-2) 0 4px, transparent 4px 9px);
-  }
-
-  .stages-line span {
-    position: absolute;
-    inset: 0;
-    background: var(--signal);
-    transform-origin: left center;
-    transform: scaleX(var(--progress, 0.34));
+    gap: 14px;
   }
 
   .stage {
-    position: relative;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    align-content: start;
     gap: 14px;
-    padding-top: 48px;
+    padding: 24px;
+    overflow: hidden;
+  }
+
+  .stage-rail {
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
   .stage-node {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 21px;
-    height: 21px;
+    width: 12px;
+    height: 12px;
+    flex: none;
     border-radius: 50%;
-    background: var(--paper);
-    box-shadow: inset 0 0 0 1.5px var(--line-2);
+    background: var(--volt);
+    box-shadow: 0 0 14px var(--volt);
   }
 
-  .stage.is-now .stage-node {
-    background: var(--signal);
-    box-shadow: 0 0 0 6px var(--signal-soft);
+  .stage-line {
+    flex: 1;
+    height: 1.5px;
+    background: linear-gradient(90deg, var(--volt-line), var(--line));
   }
 
-  .stage.is-next .stage-node {
-    box-shadow: inset 0 0 0 1.5px var(--signal);
+  .is-next .stage-node {
+    background: linear-gradient(90deg, var(--ice) 50%, transparent 50%);
+    border: 1.5px solid var(--ice);
+    box-shadow: 0 0 14px -2px var(--ice);
   }
 
-  .stage.is-next .stage-node::after {
-    content: '';
-    position: absolute;
-    inset: 6px;
-    border-radius: 50%;
-    background: var(--signal);
+  .is-next .stage-line {
+    background: linear-gradient(90deg, rgb(124 196 255 / 0.4), var(--line));
   }
 
-  .stage.is-later .stage-node {
+  .is-later .stage-node {
+    background: transparent;
+    border: 1.5px dashed var(--text-2);
     box-shadow: none;
-    border: 1.5px dashed var(--line-2);
+  }
+
+  .is-later .stage-line {
+    background: repeating-linear-gradient(90deg, var(--line-3) 0 5px, transparent 5px 10px);
   }
 
   .stage-when {
     display: flex;
-    align-items: baseline;
-    gap: 14px;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
   }
 
   .stage-when-main {
     font-family: var(--font-display);
-    font-size: 1.6rem;
-    font-style: italic;
-    font-weight: 380;
-    letter-spacing: -0.02em;
-  }
-
-  .stage.is-now .stage-when-main {
-    color: var(--signal);
+    font-size: 2rem;
+    font-weight: 640;
+    letter-spacing: -0.045em;
+    line-height: 1;
   }
 
   .stage-title {
-    font-size: 1.3rem;
-    font-weight: 580;
-    letter-spacing: -0.02em;
-    line-height: 1.25;
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--text-2);
+    text-wrap: pretty;
   }
 
-  @media (max-width: 1080px) {
-    .roadmap-head {
-      grid-template-columns: 1fr;
-    }
+  .stage-list {
+    display: grid;
+    gap: 0;
+    margin-top: 6px;
   }
 
-  @media (max-width: 820px) {
+  .stage-list li {
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+    font-size: 0.94rem;
+    color: var(--text);
+  }
+
+  .stage-more {
+    color: var(--text-3) !important;
+    font-size: 0.86rem !important;
+  }
+
+  .roadmap-link {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 18px;
+    margin-top: 28px;
+  }
+
+  .roadmap-sep {
+    color: var(--text-3);
+  }
+
+  @media (min-width: 900px) {
     .stages {
-      grid-template-columns: 1fr;
-      gap: 40px;
-      padding-left: 44px;
-    }
-
-    .stages-line {
-      top: 10px;
-      bottom: 0;
-      left: 10px;
-      right: auto;
-      width: 1px;
-      height: auto;
-      background: repeating-linear-gradient(180deg, var(--line-2) 0 4px, transparent 4px 9px);
-    }
-
-    .stages-line span {
-      transform-origin: top center;
-      transform: scaleY(var(--progress, 0.34));
-    }
-
-    .stage {
-      padding-top: 0;
-    }
-
-    .stage-node {
-      left: -44px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
 </style>

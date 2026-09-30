@@ -28,6 +28,25 @@ export function initPilotLinks(): void {
   );
 }
 
+const INTEREST_SLUGS: Record<string, string> = {
+  'early-access': 'Early access',
+  'design-partnership': 'Design partnership',
+  'paid-pilot': 'Paid pilot',
+  'product-updates': 'Product updates'
+};
+
+/**
+ * Links from other pages (`/?interest=paid-pilot#early-access`) preselect one of the form's own
+ * interest options. Unknown values are ignored, so the form contract is unchanged.
+ */
+export function initInterestFromUrl(): void {
+  const slug = new URLSearchParams(window.location.search).get('interest');
+  const value = slug ? INTEREST_SLUGS[slug.trim().toLowerCase()] : undefined;
+  if (!value) return;
+  const option = document.querySelector<HTMLInputElement>(`input[name="interest"][value="${value}"]`);
+  if (option) option.checked = true;
+}
+
 export function initLeadForm(): void {
   const leadForm = document.getElementById('early-access-form');
   if (!(leadForm instanceof HTMLFormElement)) return;

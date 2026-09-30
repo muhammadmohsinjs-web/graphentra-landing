@@ -8,17 +8,18 @@
   "scripts": {
     "dev": "astro dev",
     "preview": "npm run build && wrangler dev",
-    "build": "astro build && node scripts/verify-build.mjs",
-    "lint": "node --check worker/index.js && node --check worker/internal/leads.js && node --check tests/leads.test.js && node --check scripts/verify-build.mjs && node --check astro.config.mjs",
+    "build": "astro build && node scripts/verify-build.mjs && node scripts/claims-lint.mjs",
+    "lint": "node --check worker/index.js && node --check worker/internal/leads.js && node --check tests/leads.test.js && node --check tests/site-data.test.js && node --check tests/claims-lint.test.js && node --check tests/helpers/load-data.js && node --check scripts/verify-build.mjs && node --check scripts/claims-lint.mjs && node --check scripts/lib/html.mjs && node --check scripts/render-og.mjs && node --check astro.config.mjs",
     "typecheck": "astro check && node --check worker/index.js && node --check worker/internal/leads.js",
     "test": "node --test",
     "prepare": "npm run build",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler deploy",
+    "claims:report": "node scripts/claims-lint.mjs --report"
   },
   "dependencies": {
-    "@fontsource-variable/geist": "^5.3.0",
-    "@fontsource-variable/geist-mono": "^5.3.0",
-    "@fontsource-variable/newsreader": "^5.3.0",
+    "@fontsource-variable/bricolage-grotesque": "^5.3.0",
+    "@fontsource-variable/instrument-sans": "^5.3.0",
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
     "astro": "^7.3.5",
     "gsap": "^3.15.0"
   },

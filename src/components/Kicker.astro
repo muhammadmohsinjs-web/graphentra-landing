@@ -2,13 +2,15 @@
 interface Props {
   index: string;
   label: string;
+  /** Fade the kicker in on scroll. Turn off above the fold. */
+  reveal?: boolean;
 }
 
-const { index, label } = Astro.props;
+const { index, label, reveal = true } = Astro.props;
 ---
 
-<p class="kicker" data-reveal>
-  <span class="kicker-index">§{index}</span>
-  <span class="kicker-rule" aria-hidden="true" data-draw></span>
+<p class="kicker" data-reveal={reveal ? '' : undefined}>
+  <span class="kicker-index">[{index}]</span>
   <span>{label}</span>
+  <span class="kicker-rule" aria-hidden="true"></span>
 </p>

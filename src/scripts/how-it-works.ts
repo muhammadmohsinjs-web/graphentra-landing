@@ -1,104 +1,67 @@
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
 /**
- * Desktop: step copy scrolls, the sticky product window swaps to the matching panel.
- * Mobile / no sticky: each panel sits under its step and plays when it scrolls into view.
+ * "How it works": four steps, one console. Selecting a step opens its copy and swaps the console.
+ * The steps advance on their own while the section is on screen, until the reader takes over
+ * (never with reduced motion). Without JavaScript every step and console is simply shown.
  */
-export function initHowItWorks(motion: boolean): void {
-  const section = document.querySelector<HTMLElement>('[data-how]');
-  if (!section) return;
+export function initHowItWorks(): void {
+  const root = document.querySelector<HTMLElement>('[data-how]');
+  if (!root) return;
 
-  const copies = Array.from(section.querySelectorAll<HTMLElement>('[data-step-copy]'));
-  const panels = Array.from(section.querySelectorAll<HTMLElement>('[data-panel]'));
-  const grid = section.querySelector<HTMLElement>('.how-grid');
-  const rail = section.querySelector<HTMLElement>('[data-how-progress]');
-  const timelines = new Map<HTMLElement, gsap.core.Timeline>();
-  let current = -1;
+  const steps = Array.from(root.querySelectorAll<HTMLElement>('[data-step]'));
+  const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-how-tab]'));
+  const panels = Array.from(root.querySelectorAll<HTMLElement>('[data-panel]'));
+  if (steps.length === 0 || tabs.length !== panels.length) return;
 
-  const resetPanel = (panel: HTMLElement) => {
-    const seq = panel.querySelectorAll('[data-seq]');
-    const lines = panel.querySelectorAll('[data-line]');
-    if (seq.length) gsap.set(seq, { opacity: 0, y: 10 });
-    if (lines.length) gsap.set(lines, { scaleX: 0 });
-    panel.querySelectorAll('[data-check]').forEach(item => item.classList.remove('is-checked'));
-    panel.querySelectorAll('[data-run]').forEach(item => item.classList.remove('is-done'));
-  };
+  // Stagger the entrance of each console's rows.
+  panels.forEach(panel => panel.querySelectorAll<HTMLElement>('[data-seq]').forEach((item, k) => item.style.setProperty('--k', String(k))));
 
-  const playPanel = (panel: HTMLElement) => {
-    if (!motion) return;
-    timelines.get(panel)?.kill();
-    resetPanel(panel);
-    const seq = panel.querySelectorAll('[data-seq]');
-    const lines = panel.querySelectorAll('[data-line]');
-    const checks = Array.from(panel.querySelectorAll('[data-check]'));
-    const runs = Array.from(panel.querySelectorAll('[data-run]'));
-    const approve = panel.querySelector('[data-approve]');
-    const tl = gsap.timeline();
-    if (seq.length) tl.to(seq, { opacity: 1, y: 0, duration: 0.55, stagger: 0.055, ease: 'power2.out' }, 0.12);
-    if (lines.length) tl.to(lines, { scaleX: 1, duration: 0.7, stagger: 0.1, ease: 'power2.inOut' }, 0.35);
-    checks.forEach((item, index) => tl.add(() => item.classList.add('is-checked'), 0.65 + index * 0.3));
-    if (approve) {
-      tl.to(approve, { scale: 1.06, duration: 0.22, ease: 'power2.out', yoyo: true, repeat: 1 }, 0.75 + checks.length * 0.3);
-    }
-    runs.forEach((item, index) => tl.add(() => item.classList.add('is-done'), 0.9 + index * 0.55));
-    timelines.set(panel, tl);
-  };
+  const autoplay = document.documentElement.classList.contains('motion');
+  const DURATION = 7000;
+  let current = 0;
+  let timer = 0;
+  let visible = false;
+  let taken = false;
 
-  const activate = (index: number) => {
-    if (index === current) return;
+  const show = (index: number) => {
     current = index;
-    copies.forEach((copy, i) => copy.classList.toggle('is-active', i === index));
+    steps.forEach((step, i) => {
+      step.classList.toggle('is-active', i === index);
+      step.classList.remove('is-timing');
+    });
+    tabs.forEach((tab, i) => tab.setAttribute('aria-expanded', String(i === index)));
     panels.forEach((panel, i) => panel.classList.toggle('is-active', i === index));
-    const panel = panels[index];
-    if (panel) playPanel(panel);
+    if (autoplay && !taken && visible) {
+      // Restart the progress bar, then schedule the next step.
+      void steps[index].offsetWidth;
+      steps[index].style.setProperty('--how-dur', `${DURATION}ms`);
+      steps[index].classList.add('is-timing');
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => show((current + 1) % steps.length), DURATION);
+    }
   };
 
-  if (motion) panels.forEach(resetPanel);
+  tabs.forEach((tab, index) =>
+    tab.addEventListener('click', () => {
+      taken = true;
+      window.clearTimeout(timer);
+      show(index);
+    })
+  );
 
-  const mm = gsap.matchMedia();
-
-  mm.add('(min-width: 1024px)', () => {
-    copies.forEach((copy, index) =>
-      ScrollTrigger.create({
-        trigger: copy,
-        // The first step wakes the window up as soon as the section scrolls in.
-        start: index === 0 ? 'top 92%' : 'top 58%',
-        end: 'bottom 58%',
-        onToggle: self => {
-          if (self.isActive) activate(index);
-        }
-      })
-    );
-    if (grid && rail) {
-      ScrollTrigger.create({
-        trigger: grid,
-        start: 'top 58%',
-        end: 'bottom 58%',
-        onUpdate: self => rail.style.setProperty('--progress', self.progress.toFixed(4))
-      });
-    }
-    return () => {
-      current = -1;
-    };
+  root.addEventListener('focusin', () => {
+    taken = true;
+    window.clearTimeout(timer);
+    steps.forEach(step => step.classList.remove('is-timing'));
   });
 
-  mm.add('(max-width: 1023.98px)', () => {
-    panels.forEach(panel => panel.classList.add('is-active'));
-    panels.forEach((panel, index) =>
-      ScrollTrigger.create({
-        trigger: panel,
-        start: 'top 82%',
-        once: true,
-        onEnter: () => {
-          copies[index]?.classList.add('is-active');
-          playPanel(panel);
-        }
-      })
-    );
-    return () => {
-      panels.forEach(panel => panel.classList.remove('is-active'));
-      current = -1;
-    };
-  });
+  if (autoplay && 'IntersectionObserver' in window) {
+    new IntersectionObserver(
+      entries => {
+        visible = entries.some(entry => entry.isIntersecting);
+        if (visible && !taken) show(current);
+        else window.clearTimeout(timer);
+      },
+      { threshold: 0.4 }
+    ).observe(root.querySelector('.how-grid') ?? root);
+  }
 }

@@ -1,0 +1,64 @@
+---
+import { capabilityById } from '../data/capabilities';
+import StatusChip from './StatusChip.astro';
+
+interface Props {
+  id: string;
+  /** Show the one-sentence summary under the title. */
+  summary?: boolean;
+  /** Show the honest qualifier (what is not yet true). */
+  note?: boolean;
+}
+
+const { id, summary = false, note = true } = Astro.props;
+const capability = capabilityById(id);
+---
+
+<li class="cap" data-cap={id}>
+  <div class="cap-head">
+    <span class="cap-title">{capability.title}</span>
+    <StatusChip id={id} />
+  </div>
+  {summary && <p class="cap-summary">{capability.summary}</p>}
+  {note && capability.note && <p class="cap-note">{capability.note}</p>}
+</li>
+
+<style>
+  .cap {
+    display: grid;
+    gap: 6px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .cap:first-child {
+    border-top: 1px solid var(--line);
+  }
+
+  .cap-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+  }
+
+  .cap-title {
+    font-size: 1rem;
+    font-weight: 580;
+    letter-spacing: -0.01em;
+  }
+
+  .cap-summary,
+  .cap-note {
+    font-size: 0.92rem;
+    color: var(--text-2);
+    max-width: 44rem;
+    text-wrap: pretty;
+  }
+
+  .cap-note {
+    font-size: 0.84rem;
+    color: var(--text-3);
+  }
+</style>

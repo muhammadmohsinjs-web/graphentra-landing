@@ -1,0 +1,36 @@
+---
+import Icon from './Icon.astro';
+import { proofLimit } from '../data/site';
+---
+
+<p class="proof-note" data-proof-limit>
+  <span class="proof-note-icon" aria-hidden="true"><Icon name="unknown" size={18} /></span>
+  <span><strong>The limit of proof.</strong> Proof applies to the paths Graphentra reports. {proofLimit}</span>
+</p>
+
+<style>
+  .proof-note {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    align-items: start;
+    max-width: 46rem;
+    padding: 14px 16px;
+    border-radius: var(--r-sm);
+    border: 1px dashed var(--amber-line);
+    background: var(--amber-tint);
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--text-2);
+  }
+
+  .proof-note strong {
+    color: var(--amber);
+    font-weight: 600;
+  }
+
+  .proof-note-icon {
+    color: var(--amber);
+    padding-top: 1px;
+  }
+</style>

@@ -1,10 +1,12 @@
 ---
-import Kicker from './Kicker.astro';
+import SectionHead from './SectionHead.astro';
+import ExampleLabel from './ExampleLabel.astro';
+import { change, flows, reach, ticket } from '../data/example';
 
 const problems = [
   {
     title: 'Hidden dependencies',
-    body: 'See the connections that reach beyond the feature you meant to change — including the ones nobody wrote down.'
+    body: 'See the connections that reach beyond the feature you meant to change, including the ones nobody wrote down.'
   },
   {
     title: 'Unfocused regression',
@@ -21,33 +23,20 @@ const rowCenters = [28, 94, 160, 226];
 const origin = 126;
 const connector = (y: number) => `M0 ${origin} C64 ${origin} 56 ${y} 120 ${y}`;
 
-const reach = [
-  { name: 'OTP login', tag: 'In ticket', kind: 'declared' },
-  { name: 'Password login', tag: 'Not in ticket', kind: 'hidden' },
-  { name: 'Guardian access', tag: 'Not in ticket', kind: 'hidden' },
-  { name: 'Dynamic permissions', tag: 'Unresolved', kind: 'unknown' }
-];
 ---
 
 <section class="section problem" id="problem" aria-labelledby="problem-title">
   <div class="container">
-    <Kicker index="01" label="The change behind the change" />
-
-    <div class="problem-head">
-      <h2 class="display h-section" id="problem-title" data-split>
-        Your ticket tells one story. <em>Your code tells the rest.</em>
-      </h2>
-      <p class="lede" data-reveal>
-        A shared function changes. Another screen depends on it. An API consumer sits a few calls away. Real impact rarely fits inside the ticket — and a regression plan built from the ticket inherits its blind spots.
-      </p>
-    </div>
+    <SectionHead index="01" kicker="The change behind the change" id="problem-title">
+      <Fragment slot="title">Your ticket tells one story. <em>Your code tells the rest.</em></Fragment>
+      A shared function changes. Another screen depends on it. An API consumer sits a few calls away. A change may reach further than its ticket says, and a regression plan built from the ticket inherits its blind spots.
+    </SectionHead>
 
     <div class="problem-body">
       <ol class="problems" role="list">
         {
           problems.map((problem, index) => (
-            <li class="problem-item" data-reveal>
-              <span class="problem-rule" aria-hidden="true" data-draw></span>
+            <li class="problem-item panel" data-reveal data-spot style={`--i:${index}`}>
               <span class="problem-index mono">{String(index + 1).padStart(2, '0')}</span>
               <div>
                 <h3 class="problem-title">{problem.title}</h3>
@@ -58,22 +47,25 @@ const reach = [
         }
       </ol>
 
-      <figure class="reach" data-reach aria-labelledby="fig-02-caption">
+      <figure class="reach panel" data-no-reveal data-reach data-example aria-labelledby="fig-02-caption">
+        <div class="reach-bar">
+          <span class="label">Declared scope vs reachable scope</span>
+        </div>
         <div class="reach-stage">
           <div class="ticket" data-reach-ticket>
             <div class="ticket-top">
-              <span class="ticket-id mono">AUTH-1287</span>
-              <span class="chip">In review</span>
+              <span class="ticket-id mono">{ticket.id}</span>
+              <span class="chip">{ticket.status}</span>
             </div>
-            <p class="ticket-title">Update token validation to check the audience claim</p>
+            <p class="ticket-title">{ticket.title}</p>
             <dl class="ticket-meta">
               <div>
                 <dt>Declared scope</dt>
-                <dd>OTP login</dd>
+                <dd>{ticket.declaredScope}</dd>
               </div>
               <div>
                 <dt>Changed</dt>
-                <dd class="mono">auth/token.ts</dd>
+                <dd class="mono">{change.file}</dd>
               </div>
             </dl>
           </div>
@@ -109,16 +101,16 @@ const reach = [
           </div>
           <div>
             <dt>Reachable in the code</dt>
-            <dd class="is-signal"><span data-tally="3">3</span> flows</dd>
+            <dd class="is-volt"><span data-tally={flows.length}>{flows.length}</span> flows</dd>
           </div>
           <div>
-            <dt>Can’t be traced statically</dt>
-            <dd class="is-caution"><span data-tally="1">1</span> path</dd>
+            <dt>Could not be traced</dt>
+            <dd class="is-amber"><span data-tally="1">1</span> path</dd>
           </div>
         </dl>
 
         <figcaption class="reach-caption" id="fig-02-caption">
-          <span class="fig-no">Fig. 02</span> Declared scope vs. reachable scope for the same change. Illustrative.
+          <span>Declared scope and reachable scope for the same change.</span> <ExampleLabel />
         </figcaption>
       </figure>
     </div>
@@ -126,165 +118,139 @@ const reach = [
 </section>
 
 <style>
-  .problem-head {
-    display: grid;
-    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-    gap: 32px clamp(32px, 6vw, 96px);
-    align-items: end;
-    margin-top: clamp(28px, 3.4vw, 44px);
-  }
-
-  .problem-head .h-section {
-    max-width: 13ch;
-  }
-
   .problem-body {
     display: grid;
-    grid-template-columns: minmax(0, 4.2fr) minmax(0, 7.8fr);
-    gap: 48px clamp(32px, 5vw, 80px);
-    align-items: start;
-    margin-top: clamp(56px, 7vw, 104px);
+    gap: clamp(20px, 3vw, 32px);
+  }
+
+  .problems {
+    display: grid;
+    gap: 14px;
   }
 
   .problem-item {
-    position: relative;
     display: grid;
-    grid-template-columns: 48px 1fr;
-    gap: 12px;
-    padding: 26px 0 30px;
-  }
-
-  .problem-rule {
-    position: absolute;
-    inset: 0 0 auto;
-    height: 1px;
-    background: var(--line-2);
-    transform-origin: left center;
+    grid-template-columns: auto 1fr;
+    gap: 6px 18px;
+    padding: clamp(20px, 2.4vw, 28px);
+    overflow: hidden;
   }
 
   .problem-index {
     font-size: 0.75rem;
-    color: var(--signal);
-    padding-top: 6px;
+    letter-spacing: 0.08em;
+    color: var(--volt);
+    padding-top: 0.35rem;
   }
 
   .problem-title {
-    font-size: 1.3rem;
-    font-weight: 580;
-    letter-spacing: -0.02em;
-    line-height: 1.25;
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 1.8vw, 1.55rem);
+    font-weight: 600;
+    letter-spacing: -0.03em;
     margin-bottom: 8px;
   }
 
-  /* ---------- Fig. 02 ---------- */
-
   .reach {
-    border: 1px solid var(--line);
-    border-radius: var(--r-lg);
-    background: rgb(248 246 241 / 0.7);
-    padding: clamp(22px, 2.6vw, 36px);
+    overflow: hidden;
+  }
+
+  .reach-bar {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--line);
+    background: rgb(255 255 255 / 0.02);
   }
 
   .reach-stage {
     display: grid;
-    grid-template-columns: minmax(0, 0.92fr) 120px minmax(0, 1.2fr);
-    align-items: center;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+    padding: clamp(18px, 2.4vw, 32px) clamp(16px, 2.4vw, 32px);
   }
 
   .ticket {
-    position: relative;
-    z-index: 1;
-    padding: 18px 18px 16px;
-    border-radius: 12px;
-    background: #fff;
-    box-shadow:
-      0 0 0 1px var(--line),
-      0 18px 40px -26px rgb(18 18 16 / 0.45);
+    display: grid;
+    gap: 14px;
+    align-content: start;
+    padding: 18px;
+    border-radius: var(--r-md);
+    background: var(--surface-2);
+    box-shadow: inset 0 0 0 1px var(--line-2);
   }
 
   .ticket-top {
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
     gap: 10px;
   }
 
   .ticket-id {
-    font-size: 0.75rem;
-    color: var(--muted);
+    font-size: 0.8rem;
+    color: var(--ice);
   }
 
   .ticket-title {
-    margin: 12px 0 16px;
-    font-size: 1rem;
+    font-family: var(--font-display);
+    font-size: 1.2rem;
     font-weight: 580;
-    line-height: 1.35;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
   }
 
   .ticket-meta {
     display: grid;
-    gap: 8px;
+    gap: 10px;
     padding-top: 12px;
     border-top: 1px dashed var(--line-2);
-    font-size: 0.8rem;
-  }
-
-  .ticket-meta div {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
   }
 
   .ticket-meta dt {
-    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-3);
   }
 
   .ticket-meta dd {
-    font-weight: 560;
+    font-size: 0.92rem;
+    color: var(--text);
   }
 
   .ticket-meta dd.mono {
-    font-size: 0.75rem;
-    font-weight: 450;
+    font-size: 0.8rem;
   }
 
   .reach-lines {
-    display: block;
-    width: 120px;
-    height: 252px;
+    display: none;
+    align-self: center;
     overflow: visible;
   }
 
   .reach-line {
     fill: none;
-    stroke-width: 1.6;
+    stroke: var(--volt);
+    stroke-width: 1.8;
     stroke-linecap: round;
-  }
-
-  .reach-line-0 {
-    stroke: var(--ink);
-  }
-
-  .reach-line-1,
-  .reach-line-2 {
-    stroke: var(--signal);
+    stroke-dasharray: 1;
   }
 
   .reach-line-unknown {
-    stroke: var(--caution-bright);
-    stroke-dasharray: 4 5;
+    stroke: var(--amber);
+    stroke-dasharray: 5 5;
   }
 
   .reach-mask-path {
     fill: none;
     stroke: #fff;
-    stroke-width: 8;
-    stroke-dasharray: 1 1;
+    stroke-width: 6;
+    stroke-dasharray: 1;
   }
 
   .reach-origin {
-    fill: var(--ink);
+    fill: var(--volt);
+    filter: drop-shadow(0 0 6px var(--volt));
   }
 
   .reach-list {
@@ -297,185 +263,131 @@ const reach = [
     grid-template-columns: auto 1fr auto;
     align-items: center;
     gap: 12px;
-    height: 56px;
-    padding: 0 14px;
-    border-radius: 10px;
-    background: #fff;
-    box-shadow: 0 0 0 1px var(--line);
+    min-height: 56px;
+    padding: 0 16px;
+    border-radius: var(--r-md);
+    background: var(--surface-2);
+    box-shadow: inset 0 0 0 1px var(--line-2);
   }
 
   .reach-mark {
-    width: 12px;
-    height: 12px;
-    border-radius: 3.5px;
-    background: var(--ink);
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    background: var(--ice);
   }
 
   .reach-name {
-    font-size: 0.9rem;
-    font-weight: 580;
+    font-weight: 560;
     letter-spacing: -0.01em;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   .reach-tag {
     font-family: var(--font-mono);
-    font-size: 0.625rem;
-    letter-spacing: 0.04em;
+    font-size: 0.66rem;
+    letter-spacing: 0.07em;
     text-transform: uppercase;
-    color: var(--muted);
-    white-space: nowrap;
+    color: var(--text-2);
+  }
+
+  .reach-item.is-declared .reach-mark {
+    background: var(--ice);
   }
 
   .reach-item.is-hidden {
-    box-shadow:
-      0 0 0 1.5px var(--signal),
-      0 12px 28px -18px rgb(35 64 255 / 0.55);
+    box-shadow: inset 0 0 0 1px var(--volt-line);
+    background: linear-gradient(90deg, var(--surface-2), var(--volt-tint));
   }
 
   .reach-item.is-hidden .reach-mark {
-    background: var(--signal);
+    background: var(--volt);
+    box-shadow: 0 0 10px var(--volt);
   }
 
   .reach-item.is-hidden .reach-tag {
-    color: var(--signal-deep);
+    color: var(--volt);
   }
 
   .reach-item.is-unknown {
-    background: #fbf5e8;
-    box-shadow: 0 0 0 1px rgb(227 162 50 / 0.7);
+    box-shadow: inset 0 0 0 1px var(--amber-line);
+    background: linear-gradient(90deg, var(--surface-2), var(--amber-tint));
   }
 
   .reach-item.is-unknown .reach-mark {
-    background: none;
-    border: 1.5px dashed var(--caution-bright);
+    background: transparent;
+    border: 1.5px dashed var(--amber);
+    border-radius: 50%;
   }
 
   .reach-item.is-unknown .reach-tag {
-    color: var(--caution);
+    color: var(--amber);
   }
 
   .reach-tally {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    margin-top: clamp(24px, 3vw, 36px);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--line);
     border-top: 1px solid var(--line);
   }
 
   .reach-tally div {
-    padding: 16px 16px 0 0;
-  }
-
-  .reach-tally div + div {
-    padding-left: 16px;
-    border-left: 1px solid var(--line);
+    display: grid;
+    gap: 6px;
+    padding: 16px clamp(12px, 2vw, 24px);
+    background: var(--surface);
   }
 
   .reach-tally dt {
-    font-size: 0.8rem;
-    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-3);
   }
 
   .reach-tally dd {
-    margin-top: 6px;
-    font-size: 0.95rem;
-    color: var(--ink-3);
-  }
-
-  .reach-tally dd span {
     font-family: var(--font-display);
-    font-size: 2.4rem;
-    font-weight: 380;
+    font-size: clamp(1.3rem, 2.6vw, 2rem);
+    font-weight: 620;
     letter-spacing: -0.03em;
     line-height: 1;
-    color: var(--ink);
-    margin-right: 4px;
-    font-variant-numeric: tabular-nums;
   }
 
-  .reach-tally dd.is-signal span {
-    color: var(--signal);
+  .is-volt {
+    color: var(--volt);
   }
 
-  .reach-tally dd.is-caution span {
-    color: var(--caution);
+  .is-amber {
+    color: var(--amber);
   }
 
   .reach-caption {
-    margin-top: 22px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 16px;
+    padding: 14px clamp(16px, 2.4vw, 32px);
     font-size: 0.85rem;
-    color: var(--muted);
+    color: var(--text-2);
   }
 
-  .fig-no {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--signal);
-    margin-right: 8px;
-  }
-
-  @media (max-width: 1080px) {
-    .problem-head,
-    .problem-body {
-      grid-template-columns: 1fr;
-    }
-
-    .problem-head .h-section {
-      max-width: 16ch;
-    }
-  }
-
-  @media (max-width: 640px) {
+  @media (min-width: 760px) {
     .reach-stage {
-      grid-template-columns: 1fr;
-      gap: 20px;
+      grid-template-columns: minmax(220px, 0.9fr) 120px minmax(0, 1.2fr);
+      gap: 0;
+      align-items: center;
     }
 
     .reach-lines {
-      display: none;
+      display: block;
     }
+  }
 
-    .reach-list {
-      position: relative;
-      padding-left: 22px;
-    }
-
-    .reach-list::before {
-      content: '';
-      position: absolute;
-      left: 5px;
-      top: -20px;
-      bottom: 28px;
-      width: 1.5px;
-      background: linear-gradient(var(--ink), var(--signal) 40%, var(--caution-bright));
-    }
-
-    .reach-item::before {
-      content: '';
-      position: absolute;
-      left: 6px;
-      width: 16px;
-      height: 1.5px;
-      background: var(--line-2);
-    }
-
-    .reach-item {
-      position: relative;
-    }
-
-    .reach-tally {
-      grid-template-columns: 1fr;
-    }
-
-    .reach-tally div + div {
-      padding-left: 0;
-      border-left: 0;
-      border-top: 1px solid var(--line);
-      margin-top: 14px;
+  @media (min-width: 1000px) {
+    .problem-body {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+      align-items: start;
     }
   }
 </style>

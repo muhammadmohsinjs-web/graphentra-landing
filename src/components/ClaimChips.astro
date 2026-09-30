@@ -1,0 +1,39 @@
+---
+import { capabilityById } from '../data/capabilities';
+import StatusChip from './StatusChip.astro';
+
+interface Props {
+  /** Capability ids. Each is shown as its title with its status chip, read from capabilities.ts. */
+  ids: string[];
+}
+
+const { ids } = Astro.props;
+---
+
+<ul class="claims" role="list">
+  {
+    ids.map(id => (
+      <li>
+        <span class="claims-name">{capabilityById(id).title}</span>
+        <StatusChip id={id} />
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .claims {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 22px;
+  }
+
+  .claims li {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+    font-size: 0.9rem;
+    color: var(--text-2);
+  }
+</style>

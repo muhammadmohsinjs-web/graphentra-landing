@@ -1,0 +1,225 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import SectionHead from '../components/SectionHead.astro';
+import ExampleLabel from '../components/ExampleLabel.astro';
+import StatusChip from '../components/StatusChip.astro';
+import ProofNote from '../components/ProofNote.astro';
+import { alsoFor, personas } from '../data/personas';
+---
+
+<PageLayout page="use-cases" cta={{ title: 'See how it would fit your team.', text: 'Tell us how you decide what to test after a change. We read every request.' }}>
+  <PageHeader index="01" kicker="Use cases">
+    <Fragment slot="title">Three people, <em>one question.</em></Fragment>
+    After a change, someone has to decide what to test. These are the people who make that call, and what Graphentra is designed to give each of them.
+  </PageHeader>
+
+  {
+    personas.map((persona, i) => (
+      <section class="section persona" id={persona.anchor} aria-labelledby={`${persona.anchor}-title`} data-persona={persona.id}>
+        <div class="container persona-grid">
+          <div class="persona-head">
+            <p class="persona-tag label">{persona.tag}</p>
+            <h2 class="display persona-title" id={`${persona.anchor}-title`}>{persona.headline}</h2>
+            <p class="persona-name mono">{String(i + 1).padStart(2, '0')} · {persona.name}</p>
+          </div>
+
+          <div class="persona-body">
+            <figure class="scenario" data-example data-reveal>
+              <figcaption class="scenario-label"><ExampleLabel /></figcaption>
+              <p class="scenario-text">{persona.scenario}</p>
+            </figure>
+
+            <h3 class="gives-title">What Graphentra is designed to give you</h3>
+            <ul class="gives" role="list">
+              {
+                persona.gives.map(give => (
+                  <li>
+                    <span>{give.text}</span>
+                    <StatusChip id={give.capability} />
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+        </div>
+      </section>
+    ))
+  }
+
+  <section class="section also" id="also-for" aria-labelledby="also-title">
+    <div class="container">
+      <SectionHead index="05" kicker="Also planned for" id="also-title">
+        <Fragment slot="title">Two more, <em>later.</em></Fragment>
+        These come after the MVP. They are mentioned so you know where the evidence file is heading, not because they exist.
+      </SectionHead>
+      <ul class="also-grid" role="list" data-reveal>
+        {
+          alsoFor.map(item => (
+            <li class="also-card" data-also={item.id}>
+              <h3 class="also-name">{item.name}</h3>
+              <p>{item.text}</p>
+              <StatusChip id={item.capability} />
+            </li>
+          ))
+        }
+      </ul>
+      <div class="also-limit"><ProofNote /></div>
+    </div>
+  </section>
+</PageLayout>
+
+<style>
+  .persona {
+    border-top: 1px solid var(--line);
+    padding-block: clamp(48px, 6vw, 88px);
+  }
+
+  .persona-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
+  }
+
+  .persona-head {
+    display: grid;
+    gap: 16px;
+    align-content: start;
+  }
+
+  .persona-tag {
+    color: var(--volt);
+  }
+
+  .persona-title {
+    max-width: 14ch;
+    font-size: clamp(2rem, 4.2vw, 3.6rem);
+    font-weight: 640;
+    letter-spacing: -0.045em;
+    line-height: 0.98;
+  }
+
+  .persona-name {
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    color: var(--text-3);
+  }
+
+  .persona-body {
+    display: grid;
+    gap: 18px;
+    min-width: 0;
+  }
+
+  .scenario {
+    position: relative;
+    display: grid;
+    gap: 12px;
+    padding: clamp(20px, 2.4vw, 30px);
+    border-radius: var(--r-lg);
+    background: linear-gradient(180deg, rgb(124 196 255 / 0.06), rgb(255 255 255 / 0.01)), var(--surface);
+    box-shadow: inset 0 0 0 1px var(--line-2);
+  }
+
+  .scenario::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 22px;
+    bottom: 22px;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--ice);
+  }
+
+  .scenario-text {
+    font-size: clamp(1.05rem, 1.4vw, 1.2rem);
+    line-height: 1.6;
+    color: var(--text);
+    text-wrap: pretty;
+  }
+
+  .gives-title {
+    margin-top: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+
+  .gives {
+    display: grid;
+    gap: 10px;
+  }
+
+  .gives li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 18px;
+    padding: 16px 18px;
+    border-radius: var(--r-md);
+    background: rgb(255 255 255 / 0.02);
+    box-shadow: inset 0 0 0 1px var(--line);
+    font-size: 0.98rem;
+    color: var(--text);
+  }
+
+  .gives li > span:first-child {
+    flex: 1 1 320px;
+    text-wrap: pretty;
+  }
+
+  .also-grid {
+    display: grid;
+    gap: 14px;
+  }
+
+  .also-card {
+    display: grid;
+    align-content: start;
+    justify-items: start;
+    gap: 12px;
+    padding: 24px;
+    border-radius: var(--r-lg);
+    background: rgb(255 255 255 / 0.02);
+    box-shadow: inset 0 0 0 1px var(--line-2);
+    border: 0;
+  }
+
+  .also-name {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 620;
+    letter-spacing: -0.035em;
+  }
+
+  .also-card p {
+    color: var(--text-2);
+    text-wrap: pretty;
+  }
+
+  .also-limit {
+    margin-top: 28px;
+  }
+
+  @media (min-width: 900px) {
+    .persona-grid {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: clamp(32px, 6vw, 96px);
+    }
+
+    .persona-head {
+      position: sticky;
+      top: calc(var(--header-h) + 24px);
+    }
+
+    .also-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

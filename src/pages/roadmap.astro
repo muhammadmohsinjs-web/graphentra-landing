@@ -1,0 +1,143 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import SectionHead from '../components/SectionHead.astro';
+import RoadmapBoard from '../components/RoadmapBoard.astro';
+import ProofNote from '../components/ProofNote.astro';
+import StatusChip from '../components/StatusChip.astro';
+import { notYet } from '../data/capabilities';
+---
+
+<PageLayout page="roadmap">
+  <PageHeader index="01" kicker="Roadmap">
+    <Fragment slot="title">Built, in development, <em>planned.</em></Fragment>
+    Graphentra is pre-launch. This is what exists, what is being built for the MVP, and what comes after. There are no dates, on purpose.
+  </PageHeader>
+
+  <section class="section legend-section" aria-labelledby="legend-title">
+    <div class="container">
+      <h2 class="legend-title" id="legend-title">What the labels mean</h2>
+      <dl class="legend">
+        <div><dt><StatusChip status="built" /></dt><dd>Working in the prototype. Prototype grade, not a released product.</dd></div>
+        <div><dt><StatusChip status="in-development" /></dt><dd>Being built for the MVP. Not yet available.</dd></div>
+        <div><dt><StatusChip status="planned" /></dt><dd>Intended for after the MVP. Subject to change.</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="section board-section" id="board" aria-labelledby="board-title">
+    <div class="container">
+      <SectionHead index="02" kicker="Now, Next, Later" id="board-title">
+        <Fragment slot="title">Every claim, <em>with its status.</em></Fragment>
+        This list is the same one that drives the status chips on the rest of the site, so a page cannot say more than this one does.
+      </SectionHead>
+      <RoadmapBoard />
+      <div class="limit"><ProofNote /></div>
+    </div>
+  </section>
+
+  <section class="section nope-section" id="not-yet" aria-labelledby="nope-title">
+    <div class="container">
+      <SectionHead index="03" kicker="Not yet" id="nope-title">
+        <Fragment slot="title">What Graphentra <em>does not do yet.</em></Fragment>
+      </SectionHead>
+      <ul class="nopes" role="list">
+        {
+          notYet.map(item => (
+            <li data-not-yet={item.id}>
+              <span class="nope-title">{item.title}</span>
+              <span class="nope-note">{item.note}</span>
+              <StatusChip status="not-yet" />
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+</PageLayout>
+
+<style>
+  .legend-section {
+    padding-block: clamp(24px, 3vw, 40px);
+  }
+
+  .legend-title {
+    margin-bottom: 18px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+
+  .legend {
+    display: grid;
+    gap: 10px;
+  }
+
+  .legend div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+    padding: 16px 18px;
+    border-radius: var(--r-md);
+    background: rgb(255 255 255 / 0.02);
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+
+  .legend dt {
+    display: flex;
+  }
+
+  .legend dd {
+    font-size: 0.95rem;
+    color: var(--text-2);
+  }
+
+  .limit {
+    margin-top: 32px;
+  }
+
+  .nopes {
+    display: grid;
+    gap: 10px;
+  }
+
+  .nopes li {
+    display: grid;
+    gap: 6px 20px;
+    align-items: center;
+    padding: 18px 20px;
+    border-radius: var(--r-md);
+    background: rgb(255 255 255 / 0.02);
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+
+  .nope-title {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .nope-note {
+    font-size: 0.92rem;
+    color: var(--text-2);
+    text-wrap: pretty;
+  }
+
+  @media (min-width: 900px) {
+    .legend {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .legend div {
+      grid-template-columns: minmax(0, 1fr);
+      align-content: start;
+    }
+
+    .nopes li {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) auto;
+    }
+  }
+</style>
