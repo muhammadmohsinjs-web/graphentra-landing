@@ -1,0 +1,206 @@
+---
+import { compareColumns, compareRows } from '../data/compare';
+import StatusChip from './StatusChip.astro';
+---
+
+<div class="cmp-wrap">
+  <table class="cmp" role="table">
+    <caption class="sr-only">
+      Category-level comparison. Other categories are described in hedged terms because individual products differ. The Graphentra column shows the target at launch, with the status of each capability.
+    </caption>
+    <thead role="rowgroup">
+      <tr role="row">
+        <th scope="col" role="columnheader" class="cmp-corner"><span class="sr-only">Question</span></th>
+        {
+          compareColumns.map(column => (
+            <th scope="col" role="columnheader" class="cmp-col">
+              <span class="cmp-col-title">{column.title}</span>
+              <span class="cmp-col-blurb">{column.blurb}</span>
+            </th>
+          ))
+        }
+        <th scope="col" role="columnheader" class="cmp-col cmp-us">
+          <span class="cmp-col-title">Graphentra</span>
+          <span class="cmp-col-blurb">Target at launch</span>
+        </th>
+      </tr>
+    </thead>
+    <tbody role="rowgroup">
+      {
+        compareRows.map(row => (
+          <tr role="row">
+            <th scope="row" role="rowheader" class="cmp-row">{row.label}</th>
+            {compareColumns.map(column => (
+              <td role="cell" data-label={column.title}>
+                {row.others[column.id]}
+              </td>
+            ))}
+            <td role="cell" class="cmp-us" data-label="Graphentra (target at launch)">
+              <span class="cmp-us-text">{row.graphentra.text}</span>
+              <span class="cmp-chips">
+                {row.graphentra.capabilities.map(id => (
+                  <StatusChip id={id} />
+                ))}
+              </span>
+            </td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .cmp-wrap {
+    border-radius: var(--r-lg);
+    background: var(--surface);
+    box-shadow: inset 0 0 0 1px var(--line-2), 0 40px 80px -50px rgb(0 0 0 / 0.9);
+    overflow: hidden;
+  }
+
+  .cmp {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 0.92rem;
+  }
+
+  .cmp th,
+  .cmp td {
+    padding: 18px 18px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .cmp tbody tr:last-child > * {
+    border-bottom: 0;
+  }
+
+  .cmp thead th {
+    vertical-align: bottom;
+    background: rgb(255 255 255 / 0.025);
+    border-bottom: 1px solid var(--line-2);
+  }
+
+  .cmp-corner {
+    width: 17%;
+  }
+
+  .cmp-col-title {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.02rem;
+    font-weight: 620;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+
+  .cmp-col-blurb {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: var(--text-3);
+    line-height: 1.4;
+  }
+
+  .cmp-row {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.35;
+  }
+
+  .cmp td {
+    color: var(--text-2);
+  }
+
+  .cmp-us {
+    background: linear-gradient(180deg, rgb(200 255 62 / 0.08), rgb(200 255 62 / 0.03));
+    box-shadow: inset 1px 0 0 var(--volt-line);
+  }
+
+  .cmp td.cmp-us {
+    color: var(--text);
+  }
+
+  .cmp thead .cmp-us .cmp-col-title {
+    color: var(--volt);
+  }
+
+  .cmp-us-text {
+    display: block;
+    font-weight: 520;
+    line-height: 1.45;
+  }
+
+  .cmp-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  /* Below 980px each row becomes a card. role attributes keep the table semantics. */
+  @media (max-width: 980px) {
+    .cmp,
+    .cmp thead,
+    .cmp tbody,
+    .cmp tr,
+    .cmp th,
+    .cmp td {
+      display: block;
+    }
+
+    .cmp thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+    }
+
+    .cmp tbody tr {
+      padding: 6px 0 10px;
+      border-bottom: 1px solid var(--line-3);
+    }
+
+    .cmp tbody tr:last-child {
+      border-bottom: 0;
+    }
+
+    .cmp th,
+    .cmp td {
+      border: 0;
+      padding: 8px 18px;
+    }
+
+    .cmp-row {
+      padding-top: 18px;
+      font-size: 1.1rem;
+      font-family: var(--font-display);
+    }
+
+    .cmp td[data-label]::before {
+      content: attr(data-label);
+      display: block;
+      margin-bottom: 2px;
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--text-3);
+    }
+
+    .cmp td.cmp-us {
+      margin: 8px 12px 0;
+      border-radius: var(--r-sm);
+      box-shadow: inset 0 0 0 1px var(--volt-line);
+      padding-block: 12px;
+    }
+
+    .cmp td.cmp-us::before {
+      color: var(--volt);
+    }
+  }
+</style>

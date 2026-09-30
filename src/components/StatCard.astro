@@ -1,0 +1,99 @@
+---
+import type { MarketStat } from '../data/site';
+
+interface Props {
+  stat: MarketStat;
+  index?: number;
+}
+
+const { stat, index = 0 } = Astro.props;
+const isNumber = /\d/.test(stat.figure);
+const isRange = stat.figure.includes('→');
+---
+
+<!-- Third-party figure, quoted as published. Exempt from the invented-figures lint because it names its source and year. -->
+<article class="stat panel" data-allow-figures data-source={stat.id} data-reveal data-spot style={`--i:${index}`}>
+  <p class:list={['stat-figure', 'display', { 'is-words': !isNumber, 'is-range': isRange }]}>{stat.figure}</p>
+  <p class="stat-text">{stat.text}</p>
+  <p class="stat-source">
+    <a class="link" href={stat.href} rel="noopener">{stat.source}, {stat.year}</a>
+    <span class="stat-basis">{stat.basis}</span>
+  </p>
+</article>
+
+<style>
+  .stat {
+    display: grid;
+    align-content: space-between;
+    gap: 22px;
+    padding: clamp(22px, 2.6vw, 34px);
+    overflow: hidden;
+  }
+
+  .stat::after {
+    content: '';
+    position: absolute;
+    right: -40px;
+    top: -40px;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgb(200 255 62 / 0.1), transparent 70%);
+    pointer-events: none;
+  }
+
+  .stat-figure {
+    position: relative;
+    z-index: 1;
+    font-size: clamp(3rem, 6vw, 5.2rem);
+    font-weight: 650;
+    line-height: 0.95;
+    letter-spacing: -0.05em;
+    background: linear-gradient(100deg, var(--volt) 20%, var(--volt-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .stat-figure.is-words {
+    font-size: clamp(2rem, 3.6vw, 3.1rem);
+    letter-spacing: -0.04em;
+  }
+
+  .stat-figure.is-range {
+    font-size: clamp(2.3rem, 4.4vw, 3.8rem);
+    white-space: nowrap;
+  }
+
+  .stat-text {
+    position: relative;
+    z-index: 1;
+    max-width: 34rem;
+    font-size: 1.02rem;
+    line-height: 1.55;
+    color: var(--text);
+    text-wrap: pretty;
+  }
+
+  .stat-source {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 4px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    font-size: 0.85rem;
+  }
+
+  .stat-source .link {
+    justify-self: start;
+    color: var(--ice);
+  }
+
+  .stat-basis {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.02em;
+    color: var(--text-3);
+  }
+</style>

@@ -1,0 +1,758 @@
+---
+import { change, checklist, fingerprint, pr, surfaces, type Confidence, type ProofStep, type Surface } from '../data/example';
+import ExampleLabel from './ExampleLabel.astro';
+import Icon from './Icon.astro';
+import StatusChip from './StatusChip.astro';
+
+interface Props {
+  /** Prefix for element ids, so the figure can appear twice on a page. */
+  idPrefix?: string;
+  /** Add numbered callouts and the explanatory list (Product page). */
+  annotated?: boolean;
+  /** Surface whose proof path starts expanded once JavaScript is running. */
+  open?: Surface['id'] | null;
+  /** Show the caption under the figure. */
+  caption?: boolean;
+}
+
+const { idPrefix = 'pc', annotated = false, open = 'guardian', caption = true } = Astro.props;
+
+const confidenceLabel: Record<Confidence, string> = { proven: 'Proven', likely: 'Likely', unknown: 'Unknown' };
+const answer = (value: boolean | null) => (value === null ? '–' : value ? 'Yes' : 'No');
+const answerLabel = (value: boolean | null) => (value === null ? 'Not applicable: the path is not traced' : value ? 'Yes' : 'No');
+const stepKind: Record<ProofStep['kind'], string> = {
+  changed: 'changed',
+  caller: 'caller',
+  component: 'component',
+  route: 'route',
+  api: 'API',
+  unresolved: 'not traced'
+};
+
+const notes = [
+  { n: 1, title: 'Reach', text: 'The surfaces the change can reach, named the way the people who test name them.', capability: 'surfaces-in-evidence' },
+  { n: 2, title: 'Proof', text: 'The path from the changed function to each surface. Open any row to read it.', capability: 'proof-paths' },
+  { n: 3, title: 'Confidence', text: 'Proven, likely or unknown, shown with a label and a line style: solid for proven, dashed for unknown.', capability: 'confidence-tiers' },
+  { n: 4, title: 'Test gap', text: 'Whether an existing test reaches the surface. If none does, the row says manual check.', capability: 'test-mapping' },
+  { n: 5, title: 'Honesty', text: 'What could not be traced stays on the list as unknown. It is never dropped and never assumed safe.', capability: 'confidence-tiers' },
+  { n: 6, title: 'Feedback', text: 'One click to say whether the check was useful, noise, or missed something.', capability: 'feedback' }
+] as const;
+
+---
+
+<figure class="pc" data-example data-prcheck>
+  <div class="pc-card">
+    <div class="pc-head">
+      <p class="pc-line">
+        <strong>Graphentra Impact</strong>
+        <span class="pc-sep" aria-hidden="true">·</span>
+        <span>PR #{pr.number}</span>
+        <span class="pc-sep" aria-hidden="true">·</span>
+        <span>evidence <code>{fingerprint}</code> <span class="pc-muted">(reproducible)</span></span>
+      </p>
+      <p class="pc-change">
+        Change: <code>{change.call}</code> in <code>{change.file}</code>, {change.kind} ({change.detail})
+      </p>
+    </div>
+
+    <table class="pc-table" role="table">
+      <caption class="pc-caption">
+        <span>Affected surfaces ({surfaces.length})</span>
+        {annotated && <span class="pc-mark" aria-hidden="true">1</span>}
+      </caption>
+      <thead role="rowgroup">
+        <tr role="row">
+          <th scope="col" role="columnheader">Surface</th>
+          <th scope="col" role="columnheader">
+            Confidence
+            {annotated && <span class="pc-mark" aria-hidden="true">3</span>}
+          </th>
+          <th scope="col" role="columnheader">In ticket?</th>
+          <th scope="col" role="columnheader">
+            Test reaches it?
+            {annotated && <span class="pc-mark" aria-hidden="true">4</span>}
+          </th>
+        </tr>
+      </thead>
+      {
+        surfaces.map(surface => {
+          const proofId = `${idPrefix}-proof-${surface.id}`;
+          const isOpen = open === surface.id;
+          return (
+            <tbody role="rowgroup" data-surface={surface.id} class:list={{ 'is-unknown': surface.confidence === 'unknown', 'is-expanded': isOpen }}>
+              <tr role="row" class="pc-row">
+                <th scope="row" role="rowheader">
+                  <button type="button" class="pc-toggle" aria-expanded={isOpen ? 'true' : 'false'} aria-controls={proofId} data-proof-toggle>
+                    <span class="pc-chevron" aria-hidden="true">
+                      <Icon name="arrow" size={13} />
+                    </span>
+                    <span class="pc-name">{surface.name}</span>
+                    <code class="pc-route">{surface.route}</code>
+                  </button>
+                  {annotated && surface.id === 'unknown' && <span class="pc-mark" aria-hidden="true">5</span>}
+                </th>
+                <td role="cell" data-label="Confidence">
+                  <span class:list={['conf', `is-${surface.confidence}`]}>
+                    <svg class="conf-line" width="30" height="8" viewBox="0 0 30 8" aria-hidden="true" focusable="false">
+                      <line x1="2" y1="4" x2="28" y2="4" />
+                    </svg>
+                    <span>{confidenceLabel[surface.confidence]}</span>
+                  </span>
+                </td>
+                <td role="cell" data-label="In ticket?">
+                  <span class="sr-only">{answerLabel(surface.inTicket)}</span>
+                  <span aria-hidden="true">{answer(surface.inTicket)}</span>
+                </td>
+                <td role="cell" data-label="Test reaches it?">
+                  <span class="sr-only">{answerLabel(surface.testReaches)}</span>
+                  <span aria-hidden="true">{answer(surface.testReaches)}</span>
+                  {surface.action && <span class:list={['pc-flag', `is-${surface.action === 'manual check' ? 'manual' : 'untraced'}`]}>{surface.action}</span>}
+                </td>
+              </tr>
+              <tr role="row" class:list={['pc-proof', { 'is-open': isOpen }]} id={proofId}>
+                <td role="cell" colspan="4">
+                  <div class="proof">
+                    <p class="proof-title">
+                      Proof path
+                      <span class="proof-conf">{confidenceLabel[surface.confidence].toLowerCase()}</span>
+                      {annotated && surface.id === 'guardian' && <span class="pc-mark" aria-hidden="true">2</span>}
+                    </p>
+                    <ol class:list={['proof-path', `is-${surface.confidence}`]} aria-label={`Proof path for ${surface.name}`}>
+                      {surface.proofPath.map(step => (
+                        <li class:list={['step', `step-${step.kind}`]}>
+                          <code class="step-label">{step.label}</code>
+                          <small class="step-meta">
+                            {step.at && <span>{step.at}</span>}
+                            <span>{stepKind[step.kind]}</span>
+                          </small>
+                        </li>
+                      ))}
+                    </ol>
+                    <p class="proof-reason">{surface.reason}</p>
+                    <p class="proof-tests">
+                      <span class="proof-tests-label">Tests that reach it</span>
+                      {surface.tests.length > 0 ? surface.tests.map(test => <code>{test}</code>) : <span>{surface.confidence === 'unknown' ? 'Cannot be answered: the path is not traced.' : 'None found.'}</span>}
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          );
+        })
+      }
+    </table>
+
+    <div class="pc-foot">
+      <div class="pc-actions">
+        <button type="button" class="pc-btn" data-pc-checklist aria-expanded="false" aria-controls={`${idPrefix}-checklist`}>QA checklist</button>
+        <button type="button" class="pc-btn" data-pc-proofs aria-pressed="false">Why? proof paths</button>
+      </div>
+      <p class="pc-feedback">
+        <span>Was this useful?</span>
+        <span class="pc-pill">Useful</span>
+        <span class="pc-pill">Noise</span>
+        <span class="pc-pill">Missed something</span>
+        {annotated && <span class="pc-mark" aria-hidden="true">6</span>}
+      </p>
+    </div>
+
+    <div class="pc-checklist" id={`${idPrefix}-checklist`}>
+      <p class="pc-checklist-title">QA checklist, ranked</p>
+      <ol class="pc-checklist-list">
+        {checklist.map(item => <li>{item.text}</li>)}
+      </ol>
+    </div>
+  </div>
+
+  {
+    caption && (
+      <figcaption class="pc-figcaption">
+        <ExampleLabel />
+        <span>A mock-up of the planned PR check.</span>
+        <StatusChip id="github-action" />
+      </figcaption>
+    )
+  }
+
+  {
+    annotated && (
+      <ol class="pc-notes" aria-label="What each part of the check shows">
+        {notes.map(note => (
+          <li class="pc-note">
+            <span class="pc-mark" aria-hidden="true">{note.n}</span>
+            <div>
+              <p class="pc-note-title">
+                {note.title} <StatusChip id={note.capability} />
+              </p>
+              <p class="pc-note-text">{note.text}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    )
+  }
+</figure>
+
+<style>
+  .pc {
+    display: grid;
+    gap: 18px;
+  }
+
+  .pc-card {
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    background: var(--bg-1);
+    box-shadow: inset 0 0 0 1px var(--line-2), 0 50px 100px -50px rgb(0 0 0 / 0.95), 0 0 70px -34px rgb(200 255 62 / 0.2);
+  }
+
+  .pc-head {
+    display: grid;
+    gap: 8px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--line);
+    background: rgb(255 255 255 / 0.025);
+    font-size: 0.9rem;
+    color: var(--text-2);
+  }
+
+  .pc-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 10px;
+  }
+
+  .pc-line strong {
+    color: var(--text);
+    font-weight: 620;
+  }
+
+  .pc-sep,
+  .pc-muted {
+    color: var(--text-3);
+  }
+
+  .pc-head code,
+  .pc-change code {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--volt);
+  }
+
+  .pc-table {
+    display: block;
+    width: 100%;
+  }
+
+  .pc-caption {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px 8px;
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+
+  .pc-table thead {
+    display: none;
+  }
+
+  .pc-table tbody {
+    display: block;
+    border-top: 1px solid var(--line);
+  }
+
+  .pc-row {
+    display: grid;
+    gap: 10px;
+    padding: 16px 20px;
+  }
+
+  .pc-row th,
+  .pc-row td {
+    display: block;
+    text-align: left;
+    font-weight: 400;
+    padding: 0;
+  }
+
+  .pc-row td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 2px;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+
+  .pc-toggle {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-areas: 'chev name' '. route';
+    align-items: center;
+    gap: 2px 10px;
+    width: 100%;
+    text-align: left;
+    border-radius: var(--r-sm);
+  }
+
+  .pc-chevron {
+    grid-area: chev;
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: var(--surface-3);
+    color: var(--text-2);
+    transition: transform 0.4s var(--ease-out), background-color 0.35s var(--ease-out), color 0.35s var(--ease-out);
+  }
+
+  [aria-expanded='true'] .pc-chevron {
+    transform: rotate(90deg);
+    background: var(--volt);
+    color: var(--volt-ink);
+  }
+
+  .pc-name {
+    grid-area: name;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+
+  .pc-route {
+    grid-area: route;
+    font-size: 0.72rem;
+    color: var(--text-3);
+  }
+
+  .conf {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .conf line {
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  .conf.is-proven {
+    color: var(--volt);
+  }
+
+  .conf.is-likely {
+    color: var(--ice);
+  }
+
+  .conf.is-unknown {
+    color: var(--amber);
+  }
+
+  .conf.is-unknown line {
+    stroke-dasharray: 5 4;
+  }
+
+  .pc-flag {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: var(--r-xs);
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--amber);
+    background: var(--amber-tint);
+    box-shadow: inset 0 0 0 1px var(--amber-line);
+  }
+
+  .pc-proof {
+    display: block;
+  }
+
+  .pc-proof > td {
+    display: block;
+    padding: 0 20px 18px;
+  }
+
+  :global(html.js) .pc-proof:not(.is-open) {
+    display: none;
+  }
+
+  .proof {
+    display: grid;
+    gap: 12px;
+    padding: 16px;
+    border-radius: var(--r-md);
+    background: var(--surface);
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+
+  .proof-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+
+  .proof-conf {
+    color: var(--volt);
+  }
+
+  .is-unknown .proof-conf {
+    color: var(--amber);
+  }
+
+  .proof-path {
+    display: grid;
+    gap: 0;
+  }
+
+  .step {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 12px;
+    padding: 6px 0 6px 22px;
+  }
+
+  .step::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 14px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--volt);
+    box-shadow: 0 0 8px var(--volt);
+  }
+
+  .step::after {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 24px;
+    bottom: -8px;
+    width: 1.5px;
+    background: var(--volt-line);
+  }
+
+  .step:last-child::after {
+    display: none;
+  }
+
+  .is-unknown .step::before,
+  .step-unresolved::before {
+    background: transparent;
+    border: 1.5px dashed var(--amber);
+    box-shadow: none;
+  }
+
+  .is-unknown .step::after {
+    background: repeating-linear-gradient(180deg, var(--amber) 0 4px, transparent 4px 8px);
+  }
+
+  .step-label {
+    font-size: 0.84rem;
+    color: var(--text);
+  }
+
+  .step-meta {
+    display: inline-flex;
+    gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text-3);
+  }
+
+  .proof-reason {
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--text-2);
+  }
+
+  .proof-tests {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    font-size: 0.82rem;
+    color: var(--text-2);
+  }
+
+  .proof-tests-label {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+
+  .proof-tests code {
+    padding: 2px 8px;
+    border-radius: var(--r-xs);
+    background: var(--surface-3);
+    font-size: 0.76rem;
+    color: var(--text);
+  }
+
+  .pc-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px 24px;
+    padding: 16px 20px;
+    border-top: 1px solid var(--line);
+    background: rgb(255 255 255 / 0.02);
+  }
+
+  .pc-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .pc-btn {
+    min-height: 38px;
+    padding: 0 14px;
+    border-radius: var(--r-sm);
+    background: var(--surface-2);
+    box-shadow: inset 0 0 0 1px var(--line-2);
+    font-size: 0.86rem;
+    font-weight: 560;
+    transition: background-color 0.35s var(--ease-out), box-shadow 0.35s var(--ease-out);
+  }
+
+  .pc-btn:hover,
+  .pc-btn[aria-pressed='true'],
+  .pc-btn[aria-expanded='true'] {
+    background: var(--volt-tint);
+    box-shadow: inset 0 0 0 1px var(--volt-line);
+  }
+
+  .pc-feedback {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.84rem;
+    color: var(--text-2);
+  }
+
+  .pc-pill {
+    padding: 4px 10px;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px var(--line-2);
+    font-size: 0.78rem;
+    color: var(--text-2);
+  }
+
+  .pc-checklist {
+    padding: 18px 20px 22px;
+    border-top: 1px solid var(--line);
+  }
+
+  :global(html.js) .pc-checklist:not(.is-open) {
+    display: none;
+  }
+
+  .pc-checklist-title {
+    margin-bottom: 12px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--volt);
+  }
+
+  .pc-checklist-list {
+    display: grid;
+    gap: 10px;
+    counter-reset: qa;
+  }
+
+  .pc-checklist-list li {
+    position: relative;
+    padding-left: 38px;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: var(--text-2);
+    counter-increment: qa;
+  }
+
+  .pc-checklist-list li::before {
+    content: counter(qa);
+    position: absolute;
+    left: 0;
+    top: 1px;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    background: var(--surface-3);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--text);
+  }
+
+  .pc-figcaption {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+    font-size: 0.85rem;
+    color: var(--text-2);
+  }
+
+  /* Numbered callouts (Product page) */
+  .pc-mark {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--volt);
+    color: var(--volt-ink);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+    box-shadow: 0 0 14px -2px var(--volt);
+  }
+
+  .pc-notes {
+    display: grid;
+    gap: 14px;
+    margin-top: 8px;
+  }
+
+  .pc-note {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    padding: 16px;
+    border-radius: var(--r-md);
+    background: rgb(255 255 255 / 0.02);
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+
+  .pc-note-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    margin-bottom: 4px;
+  }
+
+  .pc-note-text {
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--text-2);
+  }
+
+  @media (min-width: 760px) {
+    .pc-table thead {
+      display: block;
+    }
+
+    .pc-table thead tr {
+      display: grid;
+      grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr) minmax(0, 0.9fr) minmax(0, 1.3fr);
+      gap: 16px;
+      padding: 8px 20px;
+    }
+
+    .pc-table thead th {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-align: left;
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-3);
+    }
+
+    .pc-row {
+      grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr) minmax(0, 0.9fr) minmax(0, 1.3fr);
+      gap: 16px;
+      align-items: center;
+    }
+
+    .pc-row td::before {
+      display: none;
+    }
+
+    .pc-notes {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .pc-notes {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>
+
+<script>
+  // Progressive enhancement. Without JavaScript every proof path is visible and the
+  // checklist is open (see the html.js rules above), so nothing here is required to read the figure.
+  document.querySelectorAll<HTMLElement>('[data-prcheck]').forEach(root => {
+    const toggles = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-proof-toggle]'));
+    const setRow = (button: HTMLButtonElement, open: boolean) => {
+      button.setAttribute('aria-expanded', String(open));
+      const row = document.getElementById(button.getAttribute('aria-controls') ?? '');
+      row?.classList.toggle('is-open', open);
+      button.closest('tbody')?.classList.toggle('is-expanded', open);
+    };
+
+    toggles.forEach(button => button.addEventListener('click', () => setRow(button, button.getAttribute('aria-expanded') !== 'true')));
+
+    const all = root.querySelector<HTMLButtonElement>('[data-pc-proofs]');
+    all?.addEventListener('click', () => {
+      const on = all.getAttribute('aria-pressed') !== 'true';
+      all.setAttribute('aria-pressed', String(on));
+      toggles.forEach(button => setRow(button, on));
+    });
+
+    const checklistButton = root.querySelector<HTMLButtonElement>('[data-pc-checklist]');
+    const panel = root.querySelector<HTMLElement>('.pc-checklist');
+    checklistButton?.addEventListener('click', () => {
+      const on = checklistButton.getAttribute('aria-expanded') !== 'true';
+      checklistButton.setAttribute('aria-expanded', String(on));
+      panel?.classList.toggle('is-open', on);
+    });
+  });
+</script>

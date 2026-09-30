@@ -1,45 +1,88 @@
 ---
 import { Font } from 'astro:assets';
 import '../styles/global.css';
+import { site } from '../data/site';
 
 interface Props {
   title: string;
   description: string;
+  /** Site-relative path with a trailing slash, e.g. "/product/". Drives the canonical URL. */
+  path?: string;
+  /** Keep the page out of search results and out of the sitemap (the 404 page). */
+  noindex?: boolean;
+  /** Used as the theme colour and the browser UI colour. */
+  themeColor?: string;
 }
 
-const { title, description } = Astro.props;
+const { title, description, path = '/', noindex = false, themeColor = '#07090d' } = Astro.props;
+
+const canonical = noindex ? undefined : new URL(path, site.url).href;
+const ogImage = new URL(site.ogImage.path, site.url).href;
+const organizationId = `${site.url}/#organization`;
+const websiteId = `${site.url}/#website`;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': organizationId,
+      name: site.name,
+      url: `${site.url}/`,
+      logo: new URL(site.logoPath, site.url).href,
+      description: site.tagline,
+      ...(site.social.length > 0 ? { sameAs: [...site.social] } : {})
+    },
+    {
+      '@type': 'WebSite',
+      '@id': websiteId,
+      url: `${site.url}/`,
+      name: site.name,
+      inLanguage: site.locale,
+      publisher: { '@id': organizationId }
+    }
+  ]
+};
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={site.locale}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#f2efe8" />
-    <meta name="color-scheme" content="light" />
+    {canonical && <link rel="canonical" href={canonical} />}
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    <meta name="theme-color" content={themeColor} />
+    <meta name="color-scheme" content="dark" />
+
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Graphentra" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content={site.ogLocale} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta name="twitter:card" content="summary" />
+    {canonical && <meta property="og:url" content={canonical} />}
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content={String(site.ogImage.width)} />
+    <meta property="og:image:height" content={String(site.ogImage.height)} />
+    <meta property="og:image:alt" content={site.ogImage.alt} />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <Font cssVariable="--font-newsreader" preload />
-    <Font cssVariable="--font-geist" preload />
-    <Font cssVariable="--font-geist-mono" />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={site.ogImage.alt} />
+
+    <link rel="icon" href={site.logoPath} type="image/svg+xml" />
+    <Font cssVariable="--font-bricolage" preload />
+    <Font cssVariable="--font-instrument" preload />
+    <Font cssVariable="--font-jetbrains" />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
     <script is:inline>
       (function () {
         var root = document.documentElement;
         root.classList.add('js');
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        root.classList.add('motion');
-        // Safety net: if the intro script never runs, reveal everything anyway.
-        window.__graphentraIntroFallback = window.setTimeout(function () {
-          root.classList.add('intro-started');
-        }, 3200);
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) root.classList.add('motion');
       })();
     </script>
   </head>

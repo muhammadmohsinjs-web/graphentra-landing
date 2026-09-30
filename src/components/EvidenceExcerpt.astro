@@ -1,0 +1,104 @@
+---
+import { evidenceExcerpt } from '../data/example';
+import ExampleLabel from './ExampleLabel.astro';
+
+const escape = (value: string) => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/** Very small JSON highlighter: keys, strings, booleans. Everything is escaped first. */
+const highlight = (json: string) =>
+  escape(json).replace(
+    /("(?:[^"\\]|\\.)*")(\s*:)?|\b(true|false|null)\b/g,
+    (_match, string: string | undefined, colon: string | undefined, literal: string | undefined) => {
+      if (literal) return `<span class="j-lit">${literal}</span>`;
+      if (colon) return `<span class="j-key">${string}</span>${colon}`;
+      return `<span class="j-str">${string}</span>`;
+    }
+  );
+
+const html = highlight(JSON.stringify(evidenceExcerpt, null, 2));
+---
+
+<figure class="ev" data-example>
+  <div class="ev-bar">
+    <span class="ev-file">.graphentra/evidence.json</span>
+    <span class="ev-note">Excerpt · 2 of 4 surfaces shown</span>
+  </div>
+  <pre class="ev-pre" tabindex="0" aria-label="Excerpt of an evidence file, as JSON"><code set:html={html} /></pre>
+  <figcaption class="ev-caption">
+    <ExampleLabel />
+    <span>Plain JSON you can read, diff and check in. Field names are indicative. Surfaces and confidence tiers are in development.</span>
+  </figcaption>
+</figure>
+
+<style>
+  .ev {
+    display: grid;
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    background: var(--bg-1);
+    box-shadow: inset 0 0 0 1px var(--line-2), 0 50px 100px -50px rgb(0 0 0 / 0.95), 0 0 70px -36px rgb(124 196 255 / 0.25);
+  }
+
+  .ev-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 16px;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--line);
+    background: rgb(255 255 255 / 0.025);
+  }
+
+  .ev-file {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--ice);
+  }
+
+  .ev-note {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+
+  .ev-pre {
+    margin: 0;
+    padding: 20px 22px;
+    overflow: auto;
+    max-height: 560px;
+    font-size: 0.8rem;
+    line-height: 1.75;
+    color: var(--text-2);
+    tab-size: 2;
+  }
+
+  .ev-pre:focus-visible {
+    outline-offset: -3px;
+  }
+
+  .ev-pre :global(.j-key) {
+    color: var(--ice);
+  }
+
+  .ev-pre :global(.j-str) {
+    color: var(--volt-2);
+  }
+
+  .ev-pre :global(.j-lit) {
+    color: var(--amber);
+  }
+
+  .ev-caption {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    padding: 14px 18px;
+    border-top: 1px solid var(--line);
+    font-size: 0.86rem;
+    color: var(--text-2);
+  }
+</style>

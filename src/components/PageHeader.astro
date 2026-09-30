@@ -1,0 +1,93 @@
+---
+import Kicker from './Kicker.astro';
+
+interface Props {
+  index: string;
+  kicker: string;
+}
+
+const { index, kicker } = Astro.props;
+---
+
+<!-- The one h1 of the page. Nothing here waits for JavaScript, so it can be the LCP element. -->
+<div class="page-head" id="top">
+  <div class="container page-head-inner">
+    <Kicker index={index} label={kicker} reveal={false} />
+    <h1 class="display page-title enter-title enter-warm"><slot name="title" /></h1>
+    <div class="page-lede enter-lift">
+      <p class="lede"><slot /></p>
+      <slot name="aside" />
+    </div>
+    <div class="page-trace" aria-hidden="true"><i></i></div>
+  </div>
+</div>
+
+<style>
+  .page-head {
+    padding-top: calc(var(--header-h) + clamp(36px, 6vw, 80px));
+    padding-bottom: clamp(8px, 2vw, 24px);
+  }
+
+  /* The next section brings its own top padding, so keep the gap under the title modest. */
+  :global(.page-head + section) {
+    padding-top: clamp(40px, 5vw, 72px);
+  }
+
+  .page-head-inner {
+    display: grid;
+    gap: clamp(22px, 2.6vw, 32px);
+  }
+
+  .page-title {
+    max-width: 15ch;
+    font-size: clamp(2.7rem, 7.2vw, 6.4rem);
+    font-weight: 640;
+    line-height: 0.96;
+    letter-spacing: -0.045em;
+  }
+
+  .page-lede {
+    display: grid;
+    gap: 24px;
+    justify-items: start;
+  }
+
+  .page-lede :global(.lede) {
+    max-width: 40rem;
+  }
+
+  /* A hairline with a signal travelling along it: the site's one recurring motif. */
+  .page-trace {
+    position: relative;
+    height: 1px;
+    margin-top: clamp(16px, 3vw, 40px);
+    background: linear-gradient(90deg, var(--volt-line), var(--line) 45%, transparent);
+    overflow: hidden;
+  }
+
+  .page-trace i {
+    position: absolute;
+    top: -1px;
+    left: 0;
+    width: 90px;
+    height: 3px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, transparent, var(--volt));
+    box-shadow: 0 0 14px var(--volt);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .page-trace i {
+      animation: trace-run 5.5s var(--ease-in-out) infinite;
+    }
+  }
+
+  @keyframes trace-run {
+    from {
+      transform: translateX(-100px);
+    }
+    to {
+      transform: translateX(min(100vw, 1240px));
+    }
+  }
+</style>

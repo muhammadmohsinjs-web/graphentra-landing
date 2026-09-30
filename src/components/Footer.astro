@@ -1,36 +1,49 @@
 ---
 import Logo from './Logo.astro';
 import Icon from './Icon.astro';
+import { earlyAccessHref, footerLinks, site } from '../data/site';
 
-const links = [
-  { href: '#product', label: 'Product' },
-  { href: '#how', label: 'How it works' },
-  { href: '#principles', label: 'Principles' },
-  { href: '#faq', label: 'FAQ' },
-  { href: '#early-access', label: 'Early access' }
-];
+interface Props {
+  /** "home" keeps the replay button for the hero example. Every other page gets the early-access call to action. */
+  variant?: 'home' | 'page';
+}
+
+const { variant = 'page' } = Astro.props;
 ---
 
-<footer class="footer" aria-labelledby="footer-title">
+<footer class="footer" aria-labelledby="footer-title" data-cta-location="footer">
   <div class="container">
     <div class="footer-top">
-      <h2 class="display footer-title" id="footer-title" data-split>Every change has a story. <em>See where it leads.</em></h2>
-      <a class="btn btn-light footer-replay" href="#top" data-replay data-magnetic>
-        <span>Replay the example</span>
-        <span class="btn-icon" aria-hidden="true"><Icon name="arrow" /></span>
-      </a>
+      <h2 class="display footer-title" id="footer-title">Every change has a story. <em>See where it leads.</em></h2>
+      {
+        variant === 'home' ? (
+          <a class="btn btn-light footer-replay" href="#top" data-replay>
+            <span>Replay the trace</span>
+            <span class="btn-icon" aria-hidden="true">
+              <Icon name="arrow" />
+            </span>
+          </a>
+        ) : (
+          <a class="btn btn-light footer-replay" href={earlyAccessHref}>
+            <span>Request early access</span>
+            <span class="btn-icon" aria-hidden="true">
+              <Icon name="arrow" />
+            </span>
+          </a>
+        )
+      }
     </div>
 
     <div class="footer-mid">
       <div class="footer-brand">
         <Logo />
-        <p>Change intelligence. Focused verification.</p>
+        <p>{site.tagline}.</p>
       </div>
       <nav aria-label="Footer">
         <p class="label">Explore</p>
         <ul role="list">
           {
-            links.map(link => (
+            footerLinks.map(link => (
               <li>
                 <a class="link" href={link.href}>
                   {link.label}
@@ -38,6 +51,9 @@ const links = [
               </li>
             ))
           }
+          <li>
+            <a class="link" href={earlyAccessHref}>Early access</a>
+          </li>
         </ul>
       </nav>
       <div class="footer-status">
@@ -48,12 +64,12 @@ const links = [
     </div>
 
     <div class="footer-mark" aria-hidden="true">
-      <p class="footer-mark-text" data-footer-mark>Graphentra</p>
+      <p class="footer-mark-text">Graphentra</p>
     </div>
 
     <div class="footer-bottom">
       <span>© {new Date().getFullYear()} Graphentra</span>
-      <span>Graphentra.com</span>
+      <span>graphentra.com</span>
       <span>Built around evidence.</span>
       <a class="link" href="#top">Back to top</a>
     </div>
@@ -63,138 +79,143 @@ const links = [
 <style>
   .footer {
     position: relative;
+    margin-top: clamp(32px, 5vw, 72px);
+    padding-top: clamp(48px, 6vw, 88px);
+    border-top: 1px solid var(--line);
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.02), transparent 30%);
     overflow: hidden;
-    overflow: clip;
-    background: var(--night);
-    color: var(--night-text);
-    padding-top: clamp(88px, 11vw, 160px);
-  }
-
-  .footer :global(.logo) {
-    color: var(--night-text);
-  }
-
-  .footer :global(.logo-core) {
-    fill: var(--signal-night);
   }
 
   .footer-top {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 28px;
     align-items: end;
-    gap: 32px 48px;
-    padding-bottom: clamp(56px, 7vw, 96px);
-    border-bottom: 1px solid var(--night-line);
+    padding-bottom: clamp(36px, 5vw, 64px);
   }
 
   .footer-title {
-    font-size: clamp(2.6rem, 5.6vw, 5.5rem);
-    max-width: 16ch;
+    max-width: 14ch;
+    font-size: clamp(2.4rem, 6vw, 5.4rem);
+    font-weight: 650;
+    letter-spacing: -0.05em;
+    line-height: 0.95;
   }
 
-  .footer-title em {
-    color: var(--signal-night);
+  .footer-replay {
+    justify-self: start;
   }
 
   .footer-mid {
     display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
-    gap: 40px;
-    padding-block: clamp(40px, 5vw, 64px);
+    gap: 36px;
+    padding-block: 36px;
+    border-top: 1px solid var(--line);
   }
 
   .footer-brand {
     display: grid;
     gap: 14px;
     align-content: start;
+    max-width: 22rem;
+    font-size: 0.92rem;
+    color: var(--text-2);
   }
 
-  .footer-brand p,
-  .footer-status p:not(.label) {
-    color: var(--night-muted);
+  .footer-mid nav ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 24px;
+    margin-top: 14px;
   }
 
-  .footer .label {
-    color: var(--night-muted);
-    margin-bottom: 14px;
+  .footer-mid .link {
+    font-weight: 500;
+    font-size: 0.94rem;
+    color: var(--text-2);
   }
 
-  .footer nav ul {
+  .footer-status {
     display: grid;
     gap: 8px;
-  }
-
-  .footer nav a {
-    color: var(--night-text);
-  }
-
-  .footer-status p:not(.label) {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    align-content: start;
+    font-size: 0.94rem;
+    color: var(--text-2);
   }
 
   .footer-status .pulse-dot {
-    background: var(--signal-night);
+    display: inline-block;
+    margin-right: 10px;
   }
 
-  /* The wordmark is sized from the container's own width (cqi), not the viewport, so the
-     whole word always spans the content column exactly — at any screen size, with or
-     without a classic scrollbar. 21.3cqi leaves ~0.7% slack after the final "a"'s tail. */
   .footer-mark {
-    container-type: inline-size;
+    position: relative;
+    margin-inline: calc(-1 * var(--gutter));
+    padding-inline: var(--gutter);
+    overflow: hidden;
+    line-height: 0.78;
+    user-select: none;
+    -webkit-mask-image: linear-gradient(180deg, #000 30%, transparent 96%);
+    mask-image: linear-gradient(180deg, #000 30%, transparent 96%);
   }
 
   .footer-mark-text {
     font-family: var(--font-display);
-    font-size: min(17.4vw, 18rem);
-    font-size: 21.3cqi;
-    font-weight: 360;
-    letter-spacing: -0.05em;
-    line-height: 1;
-    margin: 0 0 0 -0.04em;
-    padding-top: 0.02em;
-    color: var(--night-text);
-    /* Also the reveal mask for the rising letters: anything below the box is hidden. */
-    -webkit-mask-image: linear-gradient(180deg, #000 25%, rgb(0 0 0 / 0.06) 96%);
-    mask-image: linear-gradient(180deg, #000 25%, rgb(0 0 0 / 0.06) 96%);
+    font-size: clamp(3.4rem, 17.5vw, 15rem);
+    font-weight: 700;
+    letter-spacing: -0.06em;
+    text-align: center;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--line-3);
+    background: linear-gradient(100deg, transparent 30%, rgb(200 255 62 / 0.6) 50%, transparent 70%) 150% 0 / 60% 100% no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
     white-space: nowrap;
-    user-select: none;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .footer-mark-text {
+      animation: mark-sweep 6s var(--ease-in-out) infinite;
+    }
+  }
+
+  @keyframes mark-sweep {
+    to {
+      background-position: -60% 0;
+    }
   }
 
   .footer-bottom {
+    position: relative;
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 12px 28px;
-    padding-block: 24px 32px;
-    border-top: 1px solid var(--night-line);
+    gap: 8px 28px;
+    padding-block: 22px 28px;
+    border-top: 1px solid var(--line);
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     letter-spacing: 0.04em;
-    color: var(--night-muted);
+    color: var(--text-3);
   }
 
-  .footer-bottom a {
-    color: var(--night-text);
+  .footer-bottom .link {
+    margin-left: auto;
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+    color: var(--text-2);
   }
 
-  @media (max-width: 900px) {
+  @media (min-width: 900px) {
     .footer-top {
-      grid-template-columns: 1fr;
-      align-items: start;
-    }
-
-    .footer-replay {
-      justify-self: start;
+      grid-template-columns: minmax(0, 1fr) auto;
     }
 
     .footer-mid {
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1.3fr 1fr 0.7fr;
+      gap: 56px;
     }
 
-    .footer-brand {
-      grid-column: 1 / -1;
+    .footer-mid nav ul {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 </style>

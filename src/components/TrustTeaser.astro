@@ -1,0 +1,144 @@
+---
+import Kicker from './Kicker.astro';
+import Icon from './Icon.astro';
+import { principles, proofLimit } from '../data/site';
+---
+
+<section class="section principles" id="principles" aria-labelledby="principles-title" data-principles>
+  <div class="container">
+    <div class="trust-shell panel">
+      <div class="trust-glow" aria-hidden="true"></div>
+      <Kicker index="07" label="Built to earn trust" />
+
+      <h2 class="display statement" id="principles-title" data-reveal>
+        Same diff, same answer. <em>{proofLimit}</em>
+      </h2>
+
+      <div class="principles-grid">
+        {
+          principles.map((principle, index) => (
+            <article class="principle" data-reveal style={`--i:${index + 1}`}>
+              <div class="principle-top">
+                <span class="principle-icon">
+                  <Icon name={principle.icon} size={22} />
+                </span>
+                <span class="principle-index mono">{String(index + 1).padStart(2, '0')}</span>
+              </div>
+              <h3 class="principle-title">{principle.title}</h3>
+              <p class="principle-body">{principle.body}</p>
+            </article>
+          ))
+        }
+      </div>
+
+      <p class="principles-link" data-reveal>
+        <a class="link" href="/trust/">How Graphentra stays honest</a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .trust-shell {
+    position: relative;
+    display: grid;
+    gap: clamp(28px, 4vw, 48px);
+    padding: clamp(26px, 5vw, 72px);
+    overflow: hidden;
+    background: linear-gradient(180deg, rgb(200 255 62 / 0.05), transparent 45%), var(--surface);
+    box-shadow: inset 0 0 0 1px var(--volt-line), 0 60px 120px -60px rgb(200 255 62 / 0.2);
+  }
+
+  .trust-shell > :not(.trust-glow) {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* A slow scanning line across the panel */
+  .trust-glow {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(90deg, transparent, rgb(200 255 62 / 0.07), transparent) 0 0 / 40% 100% no-repeat;
+    background-position: -40% 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .trust-glow {
+      animation: scan 7s var(--ease-in-out) infinite;
+    }
+  }
+
+  @keyframes scan {
+    to {
+      background-position: 140% 0;
+    }
+  }
+
+  .statement {
+    max-width: 18ch;
+    font-size: clamp(2.4rem, 5.6vw, 5rem);
+    font-weight: 640;
+    letter-spacing: -0.045em;
+    line-height: 0.98;
+  }
+
+  .principles-grid {
+    display: grid;
+    gap: 14px;
+  }
+
+  .principle {
+    display: grid;
+    align-content: start;
+    gap: 12px;
+    padding: 22px;
+    border-radius: var(--r-md);
+    background: rgb(7 9 13 / 0.55);
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+
+  .principle-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .principle-icon {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    color: var(--volt);
+    background: var(--volt-tint);
+    box-shadow: inset 0 0 0 1px var(--volt-line);
+  }
+
+  .principle-index {
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--text-3);
+  }
+
+  .principle-title {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 620;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+
+  .principle-body {
+    font-size: 0.94rem;
+    color: var(--text-2);
+    text-wrap: pretty;
+  }
+
+  @media (min-width: 900px) {
+    .principles-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

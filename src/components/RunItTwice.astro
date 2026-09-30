@@ -1,0 +1,406 @@
+---
+import { runs } from '../data/example';
+import ExampleLabel from './ExampleLabel.astro';
+import StatusChip from './StatusChip.astro';
+
+const graphentra = runs.graphentra;
+const llm = runs.llmOnly;
+---
+
+<figure class="twice" data-example data-twice>
+  <div class="twice-inputs">
+    <p class="twice-kicker">Inputs, identical on both runs</p>
+    <ul class="twice-inputs-list" role="list">
+      {runs.inputs.map(input => <li>{input}</li>)}
+    </ul>
+  </div>
+
+  <div class="twice-grid">
+    <section class="col col-us" aria-labelledby="twice-us">
+      <header class="col-head">
+        <h3 id="twice-us">Graphentra evidence</h3>
+        <StatusChip id="evidence-file" />
+      </header>
+      {
+        graphentra.map(run => (
+          <article class="run" data-run={run.run}>
+            <header class="run-head">
+              <span class="run-no">Run {run.run}</span>
+              <span class="run-print">
+                <span class="run-print-label">fingerprint</span>
+                <code>{run.fingerprint}</code>
+              </span>
+            </header>
+            <ul class="run-list" role="list">
+              {run.surfaces.map(surface => (
+                <li>
+                  <code>{surface}</code>
+                </li>
+              ))}
+              <li class="run-unknown">
+                <span>{run.unknown} unknown, listed</span>
+              </li>
+            </ul>
+          </article>
+        ))
+      }
+      <p class="verdict is-same" data-verdict>
+        <span class="verdict-line" aria-hidden="true"></span>
+        <span><strong>Identical.</strong> Same fingerprint, same list. Same diff, same answer.</span>
+      </p>
+    </section>
+
+    <section class="col col-llm" aria-labelledby="twice-llm">
+      <header class="col-head">
+        <h3 id="twice-llm">LLM-only estimate</h3>
+        <span class="col-tag">No fingerprint</span>
+      </header>
+      {
+        llm.map(run => (
+          <article class="run" data-run={run.run}>
+            <header class="run-head">
+              <span class="run-no">Run {run.run}</span>
+              <span class="run-print">
+                <span class="run-print-label">fingerprint</span>
+                <span>none to compare</span>
+              </span>
+            </header>
+            <ul class="run-list" role="list">
+              {run.surfaces.map(surface => (
+                <li>
+                  <code>{surface}</code>
+                </li>
+              ))}
+              <li class="run-note">{run.note}</li>
+            </ul>
+          </article>
+        ))
+      }
+      <p class="verdict is-differs" data-verdict>
+        <span class="verdict-line" aria-hidden="true"></span>
+        <span><strong>Different.</strong> Two runs, two lists, and nothing to check either against.</span>
+      </p>
+    </section>
+  </div>
+
+  <div class="twice-controls" data-controls hidden>
+    <button type="button" class="twice-btn" data-run-again>Run it again</button>
+    <p class="twice-status" role="status" aria-live="polite" data-status></p>
+  </div>
+
+  <figcaption class="twice-caption">
+    <ExampleLabel />
+    <span>LLM-only estimates can differ between runs. Graphentra’s evidence, for the same inputs, does not.</span>
+  </figcaption>
+</figure>
+
+<style>
+  .twice {
+    display: grid;
+    gap: 18px;
+    padding: clamp(18px, 2.4vw, 32px);
+    border-radius: var(--r-xl);
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.01)), var(--surface);
+    box-shadow: inset 0 0 0 1px var(--line-2), 0 50px 100px -50px rgb(0 0 0 / 0.9);
+  }
+
+  .twice-inputs {
+    display: grid;
+    gap: 10px;
+    padding-bottom: 18px;
+    border-bottom: 1px dashed var(--line-2);
+  }
+
+  .twice-kicker {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+
+  .twice-inputs-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .twice-inputs-list li {
+    padding: 6px 12px;
+    border-radius: var(--r-xs);
+    background: var(--surface-3);
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--text);
+  }
+
+  .twice-grid {
+    display: grid;
+    gap: 16px;
+  }
+
+  .col {
+    display: grid;
+    align-content: start;
+    gap: 12px;
+    padding: clamp(16px, 2vw, 24px);
+    border-radius: var(--r-lg);
+    background: var(--bg-1);
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+
+  .col-us {
+    box-shadow: inset 0 0 0 1px var(--volt-line);
+    background: linear-gradient(180deg, rgb(200 255 62 / 0.06), var(--bg-1) 55%);
+  }
+
+  .col-llm {
+    box-shadow: inset 0 0 0 1px var(--amber-line);
+    background: linear-gradient(180deg, rgb(255 184 77 / 0.05), var(--bg-1) 55%);
+  }
+
+  .col-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 14px;
+  }
+
+  .col-head h3 {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 620;
+    letter-spacing: -0.035em;
+  }
+
+  .col-tag {
+    padding: 4px 9px;
+    border-radius: var(--r-xs);
+    box-shadow: inset 0 0 0 1px var(--amber-line);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+
+  .run {
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+    border-radius: var(--r-md);
+    background: var(--surface);
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+
+  .run-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 14px;
+  }
+
+  .run-no {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-2);
+  }
+
+  .run-print {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    color: var(--text-2);
+  }
+
+  .run-print-label {
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+
+  .run-print code {
+    padding: 2px 8px;
+    border-radius: var(--r-xs);
+    background: var(--volt-tint);
+    box-shadow: inset 0 0 0 1px var(--volt-line);
+    font-size: 0.78rem;
+    color: var(--volt);
+  }
+
+  .run-list {
+    display: grid;
+    gap: 6px;
+  }
+
+  .run-list li {
+    font-size: 0.86rem;
+    color: var(--text-2);
+  }
+
+  .run-list code {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--text);
+  }
+
+  .run-unknown {
+    color: var(--amber) !important;
+    font-family: var(--font-mono);
+    font-size: 0.76rem !important;
+  }
+
+  .run-note {
+    font-style: normal;
+    color: var(--amber) !important;
+  }
+
+  .verdict {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: var(--r-sm);
+    font-size: 0.9rem;
+    color: var(--text-2);
+  }
+
+  .verdict-line {
+    flex: none;
+    width: 28px;
+    height: 2px;
+    border-radius: 2px;
+  }
+
+  .verdict.is-same {
+    background: var(--volt-tint);
+    box-shadow: inset 0 0 0 1px var(--volt-line);
+  }
+
+  .verdict.is-same .verdict-line {
+    background: var(--volt);
+  }
+
+  .verdict.is-differs {
+    background: var(--amber-tint);
+    box-shadow: inset 0 0 0 1px var(--amber-line);
+  }
+
+  .verdict.is-differs .verdict-line {
+    background: repeating-linear-gradient(90deg, var(--amber) 0 5px, transparent 5px 9px);
+  }
+
+  .verdict strong {
+    color: var(--text);
+    font-weight: 620;
+  }
+
+  .twice-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 18px;
+  }
+
+  .twice-btn {
+    min-height: 44px;
+    padding: 0 18px;
+    border-radius: var(--r-sm);
+    background: var(--volt);
+    color: var(--volt-ink);
+    font-weight: 620;
+    font-size: 0.92rem;
+    box-shadow: 0 0 0 1px var(--volt-line), 0 10px 30px -14px rgb(200 255 62 / 0.6);
+    transition: transform 0.3s var(--ease-out), opacity 0.35s var(--ease-out);
+  }
+
+  .twice-btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .twice-btn:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+
+  .twice-status {
+    font-size: 0.88rem;
+    color: var(--text-2);
+  }
+
+  .twice-caption {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    font-size: 0.86rem;
+    color: var(--text-2);
+  }
+
+  /* Interactive state: run 2 waits for a click. Without JavaScript, or with reduced motion,
+     both runs are shown, which is the static end state. */
+  :global(html.motion) [data-twice].is-armed .run[data-run='2'],
+  :global(html.motion) [data-twice].is-armed .verdict {
+    display: none;
+  }
+
+  :global(html.motion) [data-twice].is-armed.is-done .run[data-run='2'],
+  :global(html.motion) [data-twice].is-armed.is-done .verdict {
+    display: grid;
+    animation: run-in 0.6s var(--ease-out);
+  }
+
+  :global(html.motion) [data-twice].is-armed.is-done .verdict {
+    display: flex;
+  }
+
+  @keyframes run-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+
+  @media (min-width: 860px) {
+    .twice-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-twice]').forEach(root => {
+    if (!document.documentElement.classList.contains('motion')) return;
+    const controls = root.querySelector<HTMLElement>('[data-controls]');
+    const button = root.querySelector<HTMLButtonElement>('[data-run-again]');
+    const status = root.querySelector<HTMLElement>('[data-status]');
+    if (!controls || !button || !status) return;
+
+    root.classList.add('is-armed');
+    controls.hidden = false;
+
+    button.addEventListener('click', () => {
+      if (root.classList.contains('is-done')) {
+        root.classList.remove('is-done');
+        button.textContent = 'Run it again';
+        status.textContent = '';
+        return;
+      }
+      button.disabled = true;
+      status.textContent = 'Running the second time…';
+      window.setTimeout(() => {
+        root.classList.add('is-done');
+        button.disabled = false;
+        button.textContent = 'Reset';
+        status.textContent = 'Graphentra: identical fingerprint. LLM-only estimate: a different list.';
+      }, 700);
+    });
+  });
+</script>

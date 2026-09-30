@@ -1,0 +1,133 @@
+---
+import Icon from './Icon.astro';
+import { earlyAccessHref } from '../data/site';
+
+interface Props {
+  name: string;
+  /** Plain label for availability. This is never a price. */
+  availability: string;
+  open: boolean;
+  forWhom: string;
+  points: string[];
+  interest?: 'Early access' | 'Design partnership' | 'Paid pilot' | 'Product updates';
+  cta?: string;
+}
+
+const { name, availability, open, forWhom, points, interest, cta } = Astro.props;
+const href = interest ? `/?interest=${interest.toLowerCase().replace(/\s+/g, '-')}#early-access` : earlyAccessHref;
+---
+
+<article class:list={['tier', { 'is-open': open }]} data-tier>
+  <header class="tier-head">
+    <h3 class="tier-name display">{name}</h3>
+    <p class="tier-avail" data-open={open}><span class="tier-dot" aria-hidden="true"></span>{availability}</p>
+  </header>
+  <p class="tier-for">{forWhom}</p>
+  <ul class="tier-points" role="list">
+    {
+      points.map(point => (
+        <li>
+          <Icon name="check" size={14} />
+          <span>{point}</span>
+        </li>
+      ))
+    }
+  </ul>
+  {
+    cta && (
+      <a class="btn btn-sm tier-cta" href={href} data-interest={interest === 'Paid pilot' ? 'Paid pilot' : undefined}>
+        <span>{cta}</span>
+        <span class="btn-icon" aria-hidden="true"><Icon name="arrow" /></span>
+      </a>
+    )
+  }
+</article>
+
+<style>
+  .tier {
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: 20px;
+    padding: clamp(22px, 2.4vw, 32px);
+    border-radius: var(--r-lg);
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.035), rgb(255 255 255 / 0.01)), var(--surface);
+    box-shadow: inset 0 0 0 1px var(--line-2);
+  }
+
+  .tier.is-open {
+    background: linear-gradient(180deg, rgb(200 255 62 / 0.08), rgb(255 255 255 / 0.01) 60%), var(--surface);
+    box-shadow: inset 0 0 0 1px var(--volt-line), 0 40px 90px -50px rgb(200 255 62 / 0.3);
+  }
+
+  .tier-head {
+    display: grid;
+    gap: 10px;
+    justify-items: start;
+  }
+
+  .tier-name {
+    font-size: clamp(1.7rem, 2.4vw, 2.2rem);
+    font-weight: 650;
+    letter-spacing: -0.045em;
+    line-height: 1;
+  }
+
+  .tier-avail {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-2);
+  }
+
+  .tier-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 1.5px dashed var(--text-2);
+  }
+
+  .tier-avail[data-open='true'] {
+    color: var(--volt);
+  }
+
+  .tier-avail[data-open='true'] .tier-dot {
+    border: 0;
+    background: var(--volt);
+    box-shadow: 0 0 10px var(--volt);
+  }
+
+  .tier-for {
+    color: var(--text-2);
+    text-wrap: pretty;
+  }
+
+  .tier-points {
+    display: grid;
+    gap: 0;
+  }
+
+  .tier-points li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid var(--line);
+    font-size: 0.94rem;
+    color: var(--text);
+  }
+
+  .tier-points :global(svg) {
+    margin-top: 4px;
+    color: var(--volt);
+  }
+
+  .tier-cta {
+    justify-self: start;
+    margin-top: 6px;
+  }
+</style>

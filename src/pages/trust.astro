@@ -1,0 +1,279 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import SectionHead from '../components/SectionHead.astro';
+import RunItTwice from '../components/RunItTwice.astro';
+import ProofNote from '../components/ProofNote.astro';
+import StatusChip from '../components/StatusChip.astro';
+import Icon from '../components/Icon.astro';
+import { principles } from '../data/site';
+
+const commitments = [
+  {
+    title: 'The evidence is deterministic',
+    body: 'The same repository content, the same diff and the same engine version give byte-identical evidence. The analysis itself uses no language model.',
+    capability: 'evidence-file'
+  },
+  {
+    title: 'Every reported surface has a path',
+    body: 'Open the path and check it yourself: changed function, caller, component, route. A claim without a path is not reported.',
+    capability: 'proof-paths'
+  },
+  {
+    title: 'Unknown stays on the list',
+    body: 'Dynamic dispatch, reflection and runtime-only wiring are reported as unknown. They are never dropped and never counted as safe.',
+    capability: 'confidence-tiers'
+  },
+  {
+    title: 'A language model narrates, it never decides',
+    body: 'An LLM can turn the evidence into a plain-English checklist. It cannot add a surface, remove one or change a confidence tier.',
+    capability: 'llm-qa-checklist'
+  },
+  {
+    title: 'The analysis runs in your own CI',
+    body: 'The planned GitHub Action runs the analysis inside your workflow. Narration is optional, and a complete report that needs no LLM is in development.',
+    capability: 'github-action'
+  }
+];
+---
+
+<PageLayout page="trust" cta={{ title: 'Read the evidence for yourself.', text: 'Early teams get hands-on onboarding and a direct line to the people building Graphentra.' }}>
+  <PageHeader index="01" kicker="Trust">
+    <Fragment slot="title">Same diff, <em>same answer.</em></Fragment>
+    Graphentra is built so that you can check its work. The evidence is deterministic, every reported surface has a path, and what it could not trace stays on the list.
+  </PageHeader>
+
+  <section class="section" id="commitments" aria-labelledby="commit-title">
+    <div class="container">
+      <SectionHead index="02" kicker="Five commitments" id="commit-title">
+        <Fragment slot="title">What we build <em>to be checkable.</em></Fragment>
+        Each commitment shows the status of the capability behind it. Some exist in the prototype. Others are in development.
+      </SectionHead>
+      <ol class="commit-grid" role="list">
+        {
+          commitments.map((item, i) => (
+            <li class="commit" data-commitment data-reveal style={`--i:${i % 3}`}>
+              <span class="commit-index mono" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+              <h3 class="commit-title">{item.title}</h3>
+              <p class="commit-body">{item.body}</p>
+              <StatusChip id={item.capability} />
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <section class="band on-night" id="run-it-twice" aria-labelledby="twice-title">
+    <div class="container band-inner">
+      <SectionHead index="03" kicker="Run it twice" id="twice-title">
+        <Fragment slot="title">Ask twice. <em>Compare the answers.</em></Fragment>
+        Give Graphentra the same inputs twice and the evidence carries the same fingerprint. Ask a language model the same question twice and the answers may differ.
+      </SectionHead>
+      <RunItTwice />
+    </div>
+  </section>
+
+  <section class="section" id="unknown" aria-labelledby="unknown-title">
+    <div class="container two-col">
+      <SectionHead index="04" kicker="The limit of proof" id="unknown-title">
+        <Fragment slot="title">A path is proof of reach. <em>Silence is not.</em></Fragment>
+      </SectionHead>
+      <div class="col-copy">
+        <p class="body-copy">
+          A proof path shows how a change reaches a surface. It cannot show that a change reaches nothing else. Static analysis has blind spots, and we would rather name them than hide them.
+        </p>
+        <p class="body-copy">
+          That is why unknown is a first-class result. When Graphentra cannot follow a call, it says so and leaves the surface on the checklist for a person to check.
+        </p>
+        <ProofNote />
+      </div>
+    </div>
+  </section>
+
+  <section class="section principles-section" id="principles" aria-labelledby="principles-title">
+    <div class="container">
+      <SectionHead index="05" kicker="Principles" id="principles-title">
+        <Fragment slot="title">Three rules <em>we hold ourselves to.</em></Fragment>
+      </SectionHead>
+      <div class="principle-grid">
+        {
+          principles.map((principle, i) => (
+            <article class="principle" data-principle data-reveal style={`--i:${i}`}>
+              <span class="principle-icon"><Icon name={principle.icon} size={24} /></span>
+              <h3 class="principle-title">{principle.title}</h3>
+              <p>{principle.body}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section privacy-section" id="privacy" aria-labelledby="privacy-title">
+    <div class="container two-col">
+      <SectionHead index="06" kicker="Privacy" id="privacy-title">
+        <Fragment slot="title">Where the analysis runs, <em>and what it sends.</em></Fragment>
+      </SectionHead>
+      <div class="col-copy">
+        <!-- TODO(founder): replace this paragraph with the precise statement of what leaves the customer's CI
+             (evidence file, changed-line excerpts, optional LLM narration, hosted reports) once it is written and
+             approved. Do not publish "your code never leaves your infrastructure": the evidence includes excerpts
+             of changed lines. /privacy and /terms are also launch blockers, because the form collects personal data. -->
+        <p class="body-copy">
+          The analysis runs in your own CI. The evidence includes excerpts of the changed lines. We are writing a precise statement of exactly what leaves your CI, and it is not published yet. Until it is, we will not summarise it.
+        </p>
+        <p class="body-copy">
+          Graphentra is pre-launch. It has no security certifications or audit reports to show yet, and we do not imply otherwise.
+        </p>
+      </div>
+    </div>
+  </section>
+</PageLayout>
+
+<style>
+  .commit-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 14px;
+    counter-reset: c;
+  }
+
+  .commit {
+    grid-column: span 2;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 28px 26px 26px;
+    border-radius: var(--r-lg);
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.035), rgb(255 255 255 / 0.01)), var(--surface);
+    box-shadow: inset 0 0 0 1px var(--line);
+    transition: box-shadow 0.35s var(--ease-out);
+  }
+
+  .commit:nth-child(n + 4) {
+    grid-column: span 3;
+  }
+
+  .commit:hover {
+    box-shadow: inset 0 0 0 1px var(--volt-line);
+  }
+
+  .commit-index {
+    display: inline-grid;
+    place-items: center;
+    min-width: 34px;
+    height: 26px;
+    padding-inline: 8px;
+    border-radius: 8px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--volt);
+    background: var(--volt-tint);
+    box-shadow: inset 0 0 0 1px var(--volt-line);
+  }
+
+  .commit-title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 620;
+    letter-spacing: -0.028em;
+    line-height: 1.12;
+    text-wrap: balance;
+  }
+
+  .commit-body {
+    color: var(--text-2);
+    line-height: 1.6;
+    text-wrap: pretty;
+    margin-bottom: auto;
+  }
+
+  .band {
+    position: relative;
+    padding-block: var(--section-pad);
+    background: linear-gradient(180deg, transparent, rgb(200 255 62 / 0.035) 30%, rgb(200 255 62 / 0.035) 70%, transparent);
+    border-block: 1px solid var(--line);
+  }
+
+  .principles-section,
+  .privacy-section {
+    border-top: 1px solid var(--line);
+  }
+
+  @media (max-width: 1000px) {
+    .commit-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .commit,
+    .commit:nth-child(n + 4) {
+      grid-column: auto;
+    }
+  }
+
+  .two-col > .col-copy {
+    display: grid;
+    gap: 18px;
+    max-width: 38rem;
+  }
+
+  @media (min-width: 960px) {
+    .two-col > .col-copy {
+      margin-left: 248px;
+    }
+  }
+
+  .principle-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .principle {
+    position: relative;
+    display: grid;
+    gap: 14px;
+    align-content: start;
+    padding: 28px 26px 30px;
+    border-radius: var(--r-lg);
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.035), rgb(255 255 255 / 0.01)), var(--surface);
+    box-shadow: inset 0 0 0 1px var(--line);
+    color: var(--text-2);
+    line-height: 1.6;
+    transition: box-shadow 0.35s var(--ease-out), transform 0.4s var(--ease-out);
+  }
+
+  .principle:hover {
+    box-shadow: inset 0 0 0 1px var(--volt-line);
+  }
+
+  .principle-icon {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: var(--volt-tint);
+    box-shadow: inset 0 0 0 1px var(--volt-line);
+    color: var(--volt);
+  }
+
+  .principle-title {
+    color: var(--text);
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 620;
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+  }
+
+  @media (max-width: 960px) {
+    .principle-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

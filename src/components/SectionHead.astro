@@ -1,0 +1,61 @@
+---
+import Kicker from './Kicker.astro';
+
+interface Props {
+  index: string;
+  kicker: string;
+  /** id of the h2, for aria-labelledby on the section. */
+  id: string;
+  /** Narrower measure for the heading. */
+  wide?: boolean;
+}
+
+const { index, kicker, id, wide = false } = Astro.props;
+const hasLede = Astro.slots.has('default');
+---
+
+<div class="sh" data-reveal>
+  <Kicker index={index} label={kicker} reveal={false} />
+  <h2 class:list={['display', 'h-section', { 'is-wide': wide }]} id={id}><slot name="title" /></h2>
+  {hasLede && <p class="lede"><slot /></p>}
+</div>
+
+<style>
+  .sh {
+    display: grid;
+    gap: 22px;
+    margin-bottom: clamp(36px, 4.5vw, 64px);
+  }
+
+  .sh .h-section.is-wide {
+    max-width: 24ch;
+  }
+
+  @media (min-width: 960px) {
+    .sh {
+      grid-template-columns: 200px minmax(0, 1fr);
+      column-gap: 48px;
+      row-gap: 22px;
+      align-items: start;
+    }
+
+    .sh :global(.kicker) {
+      grid-column: 1;
+      grid-row: 1 / span 2;
+      display: grid;
+      justify-items: start;
+      gap: 8px;
+      padding-top: 0.7rem;
+      line-height: 1.5;
+    }
+
+    .sh :global(.kicker-rule) {
+      display: none;
+    }
+
+    .sh > :global(h2),
+    .sh > :global(.lede) {
+      grid-column: 2;
+    }
+  }
+</style>

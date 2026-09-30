@@ -1,0 +1,69 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import SectionHead from '../components/SectionHead.astro';
+import ComparisonTable from '../components/ComparisonTable.astro';
+import ProofNote from '../components/ProofNote.astro';
+import { compareColumns } from '../data/compare';
+---
+
+<PageLayout page="compare">
+  <PageHeader index="01" kicker="Why deterministic">
+    <Fragment slot="title">Different tools, <em>different questions.</em></Fragment>
+    Several kinds of tool touch a pull request. Each answers a different question. This page compares Graphentra by category, not by vendor, because products within a category differ.
+  </PageHeader>
+
+  <section class="section table-section" id="table" aria-labelledby="table-title">
+    <div class="container">
+      <SectionHead index="02" kicker="By category" id="table-title">
+        <Fragment slot="title">Seven questions <em>to ask any tool.</em></Fragment>
+        Cells for other categories are hedged on purpose: “Usually”, “Varies”, “Needs history”. The Graphentra column is the target at launch, and each cell shows the status of the capability behind it.
+      </SectionHead>
+      <ComparisonTable />
+      <div class="limit"><ProofNote /></div>
+    </div>
+  </section>
+
+  <section class="section fit" id="fit" aria-labelledby="fit-title">
+    <div class="container fit-grid">
+      <SectionHead index="03" kicker="How they fit together" id="fit-title">
+        <Fragment slot="title">Alongside, <em>not instead.</em></Fragment>
+      </SectionHead>
+      <div class="fit-copy">
+        <p class="body-copy">
+          {compareColumns[0].title} are useful for commenting on code. {compareColumns[1].title} can shorten a test run when you have the history to drive them. {compareColumns[2].title} narrow work to the packages a change touches. {compareColumns[3].title} help write and replay end-to-end journeys.
+        </p>
+        <p class="body-copy">
+          Graphentra is designed for a narrower job: to say which screens, APIs and flows a change can reach, with a path for each and a list of what it could not trace. Its evidence is designed to feed the other categories, and none of that integration exists yet.
+        </p>
+      </div>
+    </div>
+  </section>
+</PageLayout>
+
+<style>
+  .limit {
+    margin-top: 28px;
+  }
+
+  .fit-grid {
+    display: grid;
+    gap: 28px;
+  }
+
+  .fit-copy {
+    display: grid;
+    gap: 18px;
+    max-width: 40rem;
+  }
+
+  @media (min-width: 960px) {
+    .fit-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .fit-copy {
+      margin-left: 248px;
+    }
+  }
+</style>

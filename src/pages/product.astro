@@ -1,0 +1,181 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import SectionHead from '../components/SectionHead.astro';
+import HowItWorks from '../components/HowItWorks.astro';
+import PrCheck from '../components/PrCheck.astro';
+import EvidenceExcerpt from '../components/EvidenceExcerpt.astro';
+import AgentTerminal from '../components/AgentTerminal.astro';
+import SupportedStack from '../components/SupportedStack.astro';
+import ClaimChips from '../components/ClaimChips.astro';
+import Icon from '../components/Icon.astro';
+import { earlyAccessHref } from '../data/site';
+
+const tools = [
+  { name: 'impact_of', text: 'What a function or file can reach. Ask before an edit.' },
+  { name: 'affected_surfaces', text: 'The surfaces a diff can reach. Ask after an edit.' },
+  { name: 'explain_path', text: 'The path from a change to one surface, step by step.' },
+  { name: 'tests_to_run', text: 'The existing tests that reach a change.' }
+];
+---
+
+<PageLayout page="product">
+  <PageHeader index="01" kicker="Product">
+    <Fragment slot="title">From a diff to <em>what to test.</em></Fragment>
+    Graphentra reads a pull request, traces what the change can reach, attaches a path to every surface it reports, and says what to test.
+    <div slot="aside" class="head-actions" data-cta-location="page-header">
+      <a class="btn" href={earlyAccessHref}>
+        <span>Request early access</span>
+        <span class="btn-icon" aria-hidden="true"><Icon name="arrow" /></span>
+      </a>
+    </div>
+  </PageHeader>
+
+  <section class="section idea" id="idea" aria-labelledby="idea-title">
+    <div class="container">
+      <SectionHead index="02" kicker="The idea" id="idea-title">
+        <Fragment slot="title">Follow the structure, <em>not every room.</em></Fragment>
+      </SectionHead>
+      <div class="idea-copy" data-reveal>
+        <p class="body-copy">
+          When a building inspector signs off a change to a load-bearing wall, they do not re-inspect every room. They follow the structure to the rooms it holds up, and they write down anything they could not see behind the plaster.
+        </p>
+        <p class="body-copy">
+          Graphentra does that for a code change. It follows the dependency graph from what changed to the screens, endpoints and flows that depend on it, and it lists what it could not trace.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <HowItWorks index="03" />
+
+  <section class="section" id="pr-check" aria-labelledby="check-title">
+    <div class="container">
+      <SectionHead index="04" kicker="The pull request check" id="check-title">
+        <Fragment slot="title">One check, <em>six parts.</em></Fragment>
+        The check your team would see on a pull request. Every part is drawn from the evidence file below.
+      </SectionHead>
+      <div class="chips-line"><ClaimChips ids={['github-action', 'test-mapping', 'feedback']} /></div>
+      <PrCheck idPrefix="product" annotated />
+    </div>
+  </section>
+
+  <section class="section" id="evidence" aria-labelledby="evidence-title">
+    <div class="container">
+      <SectionHead index="05" kicker="The evidence file" id="evidence-title">
+        <Fragment slot="title">Plain JSON <em>you can check in.</em></Fragment>
+        The check is a view of an evidence file. The file is content-hashed, so the same repository content, diff and engine version give byte-identical evidence.
+      </SectionHead>
+      <div class="chips-line"><ClaimChips ids={['evidence-file', 'surfaces-in-evidence']} /></div>
+      <EvidenceExcerpt />
+    </div>
+  </section>
+
+  <section class="section" id="agents" aria-labelledby="agents-title">
+    <div class="container agents-grid">
+      <div>
+        <SectionHead index="06" kicker="For coding agents" id="agents-title">
+          <Fragment slot="title">Give your agent <em>something to check against.</em></Fragment>
+          A coding agent can ask what an edit reaches before it makes the edit, and again afterwards.
+        </SectionHead>
+        <div class="chips-line"><ClaimChips ids={['mcp-server']} /></div>
+        <ul class="tools" role="list">
+          {
+            tools.map(tool => (
+              <li>
+                <code>{tool.name}</code>
+                <span>{tool.text}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+      <AgentTerminal />
+    </div>
+  </section>
+
+  <section class="section" id="supported" aria-labelledby="stack-title">
+    <div class="container">
+      <SectionHead index="07" kicker="Supported stack" id="stack-title">
+        <Fragment slot="title">Narrow on purpose, <em>and stated plainly.</em></Fragment>
+        The MVP targets one stack well. Anything outside it is listed as not supported yet.
+      </SectionHead>
+      <SupportedStack />
+    </div>
+  </section>
+</PageLayout>
+
+<style>
+  .head-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .idea {
+    padding-top: 0;
+  }
+
+  .chips-line {
+    margin: -24px 0 28px;
+  }
+
+  .agents-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: 40px clamp(32px, 5vw, 72px);
+    align-items: start;
+  }
+
+  .agents-grid :global(.sh) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .agents-grid :global(.sh .kicker),
+  .agents-grid :global(.sh > h2),
+  .agents-grid :global(.sh > .lede) {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .tools {
+    display: grid;
+    gap: 8px;
+  }
+
+  .tools li {
+    display: grid;
+    gap: 4px;
+    padding: 14px 18px;
+    border-radius: var(--r-md);
+    background: var(--surface);
+    box-shadow: inset 0 0 0 1px var(--line);
+    font-size: 0.95rem;
+    color: var(--text-2);
+  }
+
+  .tools code {
+    font-family: var(--font-mono);
+    font-size: 0.86rem;
+    color: var(--volt);
+  }
+
+  @media (max-width: 980px) {
+    .agents-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  .idea-copy {
+    display: grid;
+    gap: 18px;
+    max-width: 38rem;
+  }
+
+  @media (min-width: 960px) {
+    .idea-copy {
+      margin-left: 248px;
+    }
+  }
+
+
+</style>

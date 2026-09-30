@@ -1,40 +1,7 @@
-import { gsap } from 'gsap';
-
-const finePointer = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-
-/** Buttons lean gently toward the pointer. */
-export function initMagnetic(): void {
-  if (!finePointer()) return;
-  document.querySelectorAll<HTMLElement>('[data-magnetic]').forEach(element => {
-    const xTo = gsap.quickTo(element, 'x', { duration: 0.6, ease: 'power3.out' });
-    const yTo = gsap.quickTo(element, 'y', { duration: 0.6, ease: 'power3.out' });
-    element.addEventListener('pointermove', event => {
-      const box = element.getBoundingClientRect();
-      xTo((event.clientX - (box.left + box.width / 2)) * 0.2);
-      yTo((event.clientY - (box.top + box.height / 2)) * 0.3);
-    });
-    element.addEventListener('pointerleave', () => {
-      xTo(0);
-      yTo(0);
-    });
-  });
-}
-
-/** Cards track the pointer with a soft light (CSS reads --mx / --my). */
-export function initSpotlight(): void {
-  if (!finePointer()) return;
-  document.querySelectorAll<HTMLElement>('[data-spot]').forEach(card => {
-    card.addEventListener('pointermove', event => {
-      const box = card.getBoundingClientRect();
-      card.style.setProperty('--mx', `${event.clientX - box.left}px`);
-      card.style.setProperty('--my', `${event.clientY - box.top}px`);
-    });
-  });
-}
-
+// No animation library: this ships on every page that has an FAQ.
 /** Progressive enhancement for <details>: animate height instead of snapping. */
-export function initFaq(motion: boolean): void {
-  if (!motion) return;
+export function initFaq(): void {
+  if (!document.documentElement.classList.contains('motion')) return;
   document.querySelectorAll<HTMLDetailsElement>('[data-faq]').forEach(item => {
     const summary = item.querySelector('summary');
     const body = item.querySelector<HTMLElement>('[data-faq-body]');

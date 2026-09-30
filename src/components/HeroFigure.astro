@@ -1,1010 +1,618 @@
 ---
 import Icon from './Icon.astro';
-import { edgePath, edges, flows, graphSize, nodes, rings } from '../data/example';
+import ExampleLabel from './ExampleLabel.astro';
+import { change, flows, fingerprint, pr, surfaces } from '../data/example';
 
-const { width, height, cx, cy } = graphSize;
-const byId = new Map(nodes.map(node => [node.id, node]));
-const pct = (value: number, total: number) => `${((value / total) * 100).toFixed(3)}%`;
-
-const resolved = edges.map(edge => {
-  const from = byId.get(edge.from);
-  const to = byId.get(edge.to);
-  if (!from || !to) throw new Error(`Unknown edge ${edge.from} → ${edge.to}`);
-  return { ...edge, d: edgePath(from, to, edge.bend) };
-});
-const contextEdges = resolved.filter(edge => edge.kind === 'context');
-const impactEdges = resolved.filter(edge => edge.kind === 'impact');
-const unresolvedEdges = resolved.filter(edge => edge.kind === 'unresolved');
-
-// Hop labels sit in the quiet lower-left quadrant of the rings.
-const ringLabelAngle = (135 * Math.PI) / 180;
-const ringLabels = rings.map((radius, index) => ({
-  text: index === 0 ? '1 hop' : `${index + 1} hops`,
-  x: cx + radius * Math.cos(ringLabelAngle),
-  y: cy + radius * Math.sin(ringLabelAngle)
-}));
-
-const labelled = nodes.filter(node => node.label);
-const [firstFlow] = flows;
+const first = flows[0];
+const confidenceLabel = { proven: 'Proven', likely: 'Likely', unknown: 'Unknown' } as const;
+// Ordered as the proof paths run: the unknown path is last.
+const rows = surfaces.map((surface, index) => ({ surface, index, caller: surface.proofPath[1] }));
 ---
 
-<figure class="hero-figure" data-intro data-hero-figure aria-labelledby="fig-01-caption">
-  <div class="fig-bar">
-    <p class="label"><span class="fig-no">Fig. 01</span> Change propagation</p>
-    <ul class="fig-legend" aria-hidden="true">
-      <li><i class="lg lg-changed"></i>Changed</li>
-      <li><i class="lg lg-reached"></i>Reached code</li>
-      <li><i class="lg lg-area"></i>App area</li>
-      <li><i class="lg lg-unknown"></i>Unresolved</li>
-    </ul>
+<figure class="trace panel" data-hero-figure data-example aria-labelledby="fig-01-caption">
+  <div class="trace-bar">
+    <span class="trace-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span class="trace-title mono">graphentra impact <span class="trace-sep">/</span> PR #{pr.number}</span>
+    <span class="chip trace-chip"><Icon name="branch" size={13} />{pr.state}</span>
   </div>
 
-  <div class="fig-body">
-    <div class="graph" data-graph data-active-flow={firstFlow.id}>
-      <div class="graph-canvas">
-      <svg class="graph-rings" viewBox={`0 0 ${width} ${height}`} aria-hidden="true" data-graph-rings>
-        {rings.map((radius, index) => <circle class={`ring ring-${index}`} cx={cx} cy={cy} r={radius} />)}
-      </svg>
-
-      <div class="graph-stage" data-graph-stage>
-        <svg class="graph-svg" viewBox={`0 0 ${width} ${height}`} aria-hidden="true">
-          <g class="g-context">
-            {contextEdges.map(edge => <path class="edge edge-context" d={edge.d} />)}
-          </g>
-
-          <g class="g-ripples">
-            <circle class="ripple" cx={cx} cy={cy} r="0" />
-            <circle class="ripple" cx={cx} cy={cy} r="0" />
-            <circle class="ripple" cx={cx} cy={cy} r="0" />
-          </g>
-
-          <g class="g-impact">
-            {impactEdges.map(edge => <path class="edge edge-base" d={edge.d} />)}
-            {unresolvedEdges.map(edge => <path class="edge edge-unresolved" d={edge.d} data-flow={edge.flow} />)}
-            {
-              impactEdges.map(edge => (
-                <path class="edge edge-active" d={edge.d} pathLength="1" data-flow={edge.flow} data-hop={edge.hop} />
-              ))
-            }
-            {
-              impactEdges.map(edge => (
-                <path class="edge edge-pulse" d={edge.d} pathLength="1" data-flow={edge.flow} data-hop={edge.hop} />
-              ))
-            }
-          </g>
-
-          <g class="g-nodes">
-            {
-              nodes.map(node => {
-                const transform = `translate(${node.x} ${node.y})`;
-                if (node.kind === 'changed')
-                  return (
-                    <g class="node node-changed" transform={transform}>
-                      <circle class="node-aura" r="36" />
-                      <circle class="node-orbit" r="21" />
-                      <circle class="node-shape" r="10.5" />
-                      <circle class="node-eye" r="3.4" />
-                    </g>
-                  );
-                if (node.kind === 'fn')
-                  return (
-                    <g class="node node-fn is-lit" transform={transform} data-flow={node.flow} data-hop={node.hop}>
-                      <circle class="node-select" r="15" />
-                      <circle class="node-shape" r="6.5" />
-                    </g>
-                  );
-                if (node.kind === 'flow')
-                  return (
-                    <g class="node node-flow is-lit" transform={transform} data-flow={node.flow} data-hop={node.hop}>
-                      <rect class="node-select" x="-18" y="-18" width="36" height="36" rx="10" />
-                      <rect class="node-shape" x="-9" y="-9" width="18" height="18" rx="5" />
-                      <rect class="node-inner" x="-3" y="-3" width="6" height="6" rx="1.5" />
-                    </g>
-                  );
-                if (node.kind === 'unknown')
-                  return (
-                    <g class="node node-unknown is-lit" transform={transform} data-flow="unknown" data-hop={node.hop}>
-                      <circle class="node-shape" r="12" />
-                      <text class="node-q" y="5" text-anchor="middle">?</text>
-                    </g>
-                  );
-                if (node.kind === 'context')
-                  return (
-                    <g class="node node-context" transform={transform}>
-                      <circle class="node-shape" r="4.2" />
-                    </g>
-                  );
-                return <circle class="node-far" cx={node.x} cy={node.y} r="2.6" />;
-              })
-            }
-          </g>
-        </svg>
-
-        <div class="graph-labels" aria-hidden="true">
-          {
-            ringLabels.map(ring => (
-              <span class="g-ring-label" style={`--x:${pct(ring.x, width)};--y:${pct(ring.y, height)}`}>
-                {ring.text}
-              </span>
-            ))
-          }
-          {
-            labelled.map(node => (
-              <span
-                class={`g-label g-label-${node.kind}`}
-                data-pos={node.pos}
-                data-pos-sm={node.posSm}
-                data-flow={node.flow}
-                data-hop={node.hop}
-                data-select-flow={node.kind === 'flow' ? node.flow : undefined}
-                style={`--x:${pct(node.x, width)};--y:${pct(node.y, height)}`}
-              >
-                <span class="g-label-main">
-                  {node.label}
-                  {node.kind === 'changed' && <span class="g-tag">modified</span>}
-                </span>
-                {node.sub && <span class="g-label-sub">{node.sub}</span>}
-              </span>
-            ))
-          }
-        </div>
-      </div>
-      </div>
+  <div class="trace-body" data-graph data-active-flow={first.id}>
+    <div class="origin" style="--n:0">
+      <p class="label">Changed</p>
+      <p class="origin-fn mono">{change.call}</p>
+      <p class="origin-meta mono">{change.file}<br />{change.kind} · +{change.added} −{change.removed}</p>
+      <span class="origin-ping" aria-hidden="true"></span>
     </div>
 
-    <aside class="brief" aria-labelledby="brief-title">
-      <div class="brief-head">
-        <p class="label">Change brief</p>
-        <span class="chip brief-open"><Icon name="branch" size={13} />PR #482 · Open</span>
-      </div>
-
-      <div>
-        <p class="brief-title" id="brief-title">Update shared authentication</p>
-        <p class="brief-meta mono">auth/token.ts · 1 function changed · +12 −3</p>
-      </div>
-
-      <dl class="brief-stats">
-        <div>
-          <dt>Flows to verify</dt>
-          <dd data-count>3</dd>
-        </div>
-        <div>
-          <dt>Unresolved paths</dt>
-          <dd data-count class="is-caution">1</dd>
-        </div>
-      </dl>
-
-      <div class="brief-flows" role="group" aria-label="Affected application areas. Select one to see why it needs checking.">
-        {
-          flows.map((flow, index) => (
+    <ol class="rows" role="list" aria-label="Affected surfaces. Select one to read the proof path that reaches it.">
+      {
+        rows.map(({ surface, index, caller }) => (
+          <li class:list={['row', `is-${surface.confidence}`]} style={`--n:${index}`}>
             <button
               type="button"
-              class="flow-btn"
-              data-flow-btn={flow.id}
-              data-reason={flow.reason}
-              data-path={JSON.stringify(flow.path)}
-              aria-pressed={index === 0 ? 'true' : 'false'}
+              class="row-btn"
+              data-flow-btn={surface.id}
+              data-reason={surface.reason}
+              data-path={JSON.stringify(surface.proofPath.map(step => ({ label: step.label, at: step.at ?? '' })))}
+              data-tests={surface.tests.join(', ')}
+              data-conf={confidenceLabel[surface.confidence].toLowerCase()}
+              aria-pressed={surface.id === first.id ? 'true' : 'false'}
             >
-              <span class="flow-mark" aria-hidden="true"></span>
-              <span class="flow-text">
-                <span class="flow-name">{flow.name}</span>
-                <span class="flow-rel">{flow.relation}</span>
+              <span class="stub" aria-hidden="true"></span>
+              <span class="node node-caller">
+                <code>{caller.label}()</code>
+                <small>{caller.at}</small>
               </span>
-              <span class={`flow-pri pri-${flow.priority.toLowerCase()}`}>{flow.priority}</span>
+              <span class="wire" aria-hidden="true"><i></i></span>
+              <span class="node node-end">
+                <b>{surface.confidence === 'unknown' ? 'Not traced' : surface.name}</b>
+                <code>{surface.route}</code>
+                <span class="conf">
+                  <svg width="22" height="8" viewBox="0 0 22 8" aria-hidden="true" focusable="false"><line x1="2" y1="4" x2="20" y2="4" /></svg>
+                  {confidenceLabel[surface.confidence]}
+                </span>
+              </span>
             </button>
-          ))
-        }
-      </div>
-
-      <div class="brief-why" aria-live="polite" aria-atomic="true">
-        <p class="label">Why check this?</p>
-        <p class="why-reason" data-why-reason>{firstFlow.reason}</p>
-        <p class="why-path mono" data-why-path>
-          {
-            firstFlow.path.map((segment, index) => (
-              <>
-                {index > 0 && <span class="why-arrow"><span class="sr-only">then</span></span>}
-                <span>{segment}</span>
-              </>
-            ))
-          }
-        </p>
-      </div>
-
-      <p class="brief-unknown">
-        <span class="unknown-icon" aria-hidden="true"><Icon name="unknown" size={18} /></span>
-        <span><strong>1 unresolved path.</strong> Dynamic permission loading can’t be traced statically — it’s flagged for review, not assumed safe.</span>
-      </p>
-    </aside>
+          </li>
+        ))
+      }
+    </ol>
   </div>
 
-  <figcaption class="fig-caption" id="fig-01-caption">
-    <span><span class="fig-no">Fig. 01</span> A one-function change to <code class="mono">validateToken()</code> reaches three user flows — and one path that static analysis can’t resolve.</span>
-    <span class="label">Illustrative · sample data</span>
+  <div class="trace-detail" aria-live="polite" aria-atomic="true">
+    <div class="detail-head">
+      <p class="label">Proof path</p>
+      <p class="detail-tests mono" data-why-tests>{first.tests.length > 0 ? `tests: ${first.tests.join(', ')}` : 'no test reaches it'}</p>
+    </div>
+    <p class="detail-path mono" data-why-path>
+      {
+        first.proofPath.map((step, index) => (
+          <>
+            {index > 0 && <span class="detail-arrow"><span class="sr-only">then</span></span>}
+            <span>{step.label}</span>
+          </>
+        ))
+      }
+    </p>
+    <p class="detail-reason" data-why-reason>{first.reason}</p>
+  </div>
+
+  <dl class="trace-tally">
+    <div>
+      <dt>Reached, proven path</dt>
+      <dd class="is-volt">{flows.length}</dd>
+    </div>
+    <div>
+      <dt>Not traced</dt>
+      <dd class="is-amber">1</dd>
+    </div>
+    <div>
+      <dt>Evidence</dt>
+      <dd class="mono">{fingerprint}</dd>
+    </div>
+  </dl>
+
+  <figcaption class="trace-caption" id="fig-01-caption">
+    <span>A one-function change to <code class="mono">{change.call}</code> reaches three surfaces with a proven path, and one path that cannot be traced.</span>
+    <ExampleLabel />
   </figcaption>
 </figure>
 
 <style>
-  .hero-figure {
-    position: relative;
-    border: 1px solid var(--line);
-    border-radius: var(--r-lg);
-    background: rgb(248 246 241 / 0.72);
-    box-shadow:
-      0 1px 0 rgb(255 255 255 / 0.7) inset,
-      0 40px 90px -50px rgb(18 18 16 / 0.35);
+  .trace {
+    --bus: 30px;
     overflow: hidden;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.01)), var(--surface);
+    box-shadow: inset 0 0 0 1px var(--line-2), 0 50px 100px -50px rgb(0 0 0 / 0.9), 0 0 80px -30px rgb(200 255 62 / 0.18);
   }
 
-  .fig-bar,
-  .fig-caption {
+  .trace-bar {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 16px 24px;
-    padding: 14px 22px;
-  }
-
-  .fig-bar {
+    gap: 14px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--line);
+    background: rgb(255 255 255 / 0.02);
   }
 
-  .fig-no {
-    color: var(--signal);
-    margin-right: 10px;
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
-  .fig-legend {
+  .trace-dots {
     display: flex;
-    flex-wrap: wrap;
-    gap: 6px 20px;
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-
-  .fig-legend li {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .lg {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-  }
-
-  .lg-changed {
-    background: var(--signal);
-    box-shadow: 0 0 0 3px var(--signal-soft);
-  }
-
-  .lg-reached {
-    border: 2px solid var(--signal);
-  }
-
-  .lg-area {
-    border-radius: 3px;
-    background: var(--signal);
-  }
-
-  .lg-unknown {
-    border: 1.5px dashed var(--caution-bright);
-  }
-
-  .fig-body {
-    display: grid;
-    grid-template-columns: minmax(0, 1.6fr) minmax(330px, 1fr);
-  }
-
-  /* ---------- Graph ---------- */
-
-  .graph {
-    position: relative;
-    display: grid;
-    align-items: center;
-    border-right: 1px solid var(--line);
-    isolation: isolate;
-    overflow: hidden;
-  }
-
-  /* The canvas keeps the viewBox ratio so HTML labels and SVG geometry always line up. */
-  .graph-canvas {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 3 / 2;
-  }
-
-  .graph::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background-image: radial-gradient(circle, rgb(18 18 16 / 0.16) 1px, transparent 1.3px);
-    background-size: 24px 24px;
-    background-position: center;
-    -webkit-mask-image: radial-gradient(ellipse 60% 62% at 50% 50%, #000 30%, transparent 100%);
-    mask-image: radial-gradient(ellipse 60% 62% at 50% 50%, #000 30%, transparent 100%);
-  }
-
-  .graph-rings,
-  .graph-stage,
-  .graph-svg {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  .graph-svg {
-    overflow: visible;
-  }
-
-  .ring {
-    fill: none;
-    stroke: var(--line-2);
-    stroke-width: 1;
-    stroke-dasharray: 2 6;
-  }
-
-  .ring-0 {
-    stroke: rgb(35 64 255 / 0.35);
-  }
-
-  .edge {
-    fill: none;
-    stroke-linecap: round;
-  }
-
-  .edge-context {
-    stroke: var(--line-2);
-    stroke-width: 1.1;
-  }
-
-  .edge-base {
-    stroke: rgb(18 18 16 / 0.12);
-    stroke-width: 1.4;
-  }
-
-  .edge-active {
-    stroke: var(--signal);
-    stroke-width: 1.9;
-    stroke-dasharray: 1 1;
-    stroke-dashoffset: 0;
-    transition:
-      opacity 0.45s ease,
-      stroke-width 0.45s var(--ease-out);
-  }
-
-  .edge-pulse {
-    stroke: var(--signal);
-    stroke-width: 4.5;
-    stroke-dasharray: 0.1 1.2;
-    stroke-dashoffset: 0.1;
-    opacity: 0;
-  }
-
-  .edge-unresolved {
-    stroke: var(--caution-bright);
-    stroke-width: 1.6;
-    stroke-dasharray: 4 5;
-  }
-
-  .ripple {
-    fill: none;
-    stroke: var(--signal);
-    stroke-width: 1.2;
-    opacity: 0;
-  }
-
-  /* Shapes are scaled by GSAP, so only colour/opacity transition in CSS. */
-  .node-shape,
-  .node-inner,
-  .node-orbit,
-  .node-aura,
-  .node-eye {
-    transform-box: fill-box;
-    transform-origin: center;
-    transition:
-      fill 0.45s ease,
-      stroke 0.45s ease,
-      opacity 0.45s ease;
-  }
-
-  .node-select {
-    transform-box: fill-box;
-    transform-origin: center;
-    transition:
-      opacity 0.45s ease,
-      transform 0.6s var(--ease-spring);
-  }
-
-  .node-changed .node-aura {
-    fill: var(--signal);
-    opacity: 0.08;
-  }
-
-  .node-changed .node-orbit {
-    fill: none;
-    stroke: var(--signal);
-    stroke-width: 1.2;
-    opacity: 0.55;
-  }
-
-  .node-changed .node-shape {
-    fill: var(--signal);
-  }
-
-  .node-changed .node-eye {
-    fill: #fff;
-  }
-
-  .node-fn .node-shape {
-    fill: var(--card);
-    stroke: var(--ink-3);
-    stroke-width: 1.6;
-  }
-
-  .node-fn.is-lit .node-shape {
-    fill: var(--signal);
-    stroke: var(--signal);
-  }
-
-  .node-flow .node-shape {
-    fill: var(--card);
-    stroke: var(--ink);
-    stroke-width: 1.6;
-  }
-
-  .node-flow .node-inner {
-    fill: var(--ink);
-    opacity: 0;
-  }
-
-  .node-flow.is-lit .node-shape {
-    fill: var(--signal);
-    stroke: var(--signal);
-  }
-
-  .node-flow.is-lit .node-inner {
-    fill: #fff;
-    opacity: 1;
-  }
-
-  .node-select {
-    fill: none;
-    stroke: var(--signal);
-    stroke-width: 1.2;
-    opacity: 0;
-    transform: scale(0.6);
-  }
-
-  .node-unknown .node-shape {
-    fill: #fbf4e6;
-    stroke: var(--caution-bright);
-    stroke-width: 1.6;
-    stroke-dasharray: 3.5 3;
-  }
-
-  .node-q {
-    fill: var(--caution);
-    font-family: var(--font-mono);
-    font-size: 14px;
-    font-weight: 600;
-  }
-
-  .node-context .node-shape {
-    fill: var(--card);
-    stroke: var(--line-2);
-    stroke-width: 1.4;
-  }
-
-  .node-far {
-    fill: var(--line-2);
-  }
-
-  /* Selection: emphasise one flow's path, quieten the others. */
-  .graph .edge-active,
-  .graph .node-fn,
-  .graph .node-flow,
-  .graph .g-label-fn,
-  .graph .g-label-flow {
-    transition: opacity 0.45s ease;
-  }
-
-  .graph[data-active-flow='otp'] .edge-active:not([data-flow='otp']),
-  .graph[data-active-flow='password'] .edge-active:not([data-flow='password']),
-  .graph[data-active-flow='guardian'] .edge-active:not([data-flow='guardian']) {
-    opacity: 0.35;
-  }
-
-  .graph[data-active-flow='otp'] .edge-active[data-flow='otp'],
-  .graph[data-active-flow='password'] .edge-active[data-flow='password'],
-  .graph[data-active-flow='guardian'] .edge-active[data-flow='guardian'] {
-    stroke-width: 2.8;
-  }
-
-  .graph[data-active-flow='otp'] .node[data-flow='otp'] .node-select,
-  .graph[data-active-flow='password'] .node[data-flow='password'] .node-select,
-  .graph[data-active-flow='guardian'] .node[data-flow='guardian'] .node-select {
-    opacity: 0.7;
-    transform: scale(1);
-  }
-
-  .graph[data-active-flow='otp'] :is(.g-label-fn, .g-label-flow):not([data-flow='otp']):not([data-flow='unknown']),
-  .graph[data-active-flow='password'] :is(.g-label-fn, .g-label-flow):not([data-flow='password']):not([data-flow='unknown']),
-  .graph[data-active-flow='guardian'] :is(.g-label-fn, .g-label-flow):not([data-flow='guardian']):not([data-flow='unknown']) {
-    opacity: 0.55;
-  }
-
-  /* ---------- Labels (HTML, so text stays crisp at every size) ---------- */
-
-  .graph-labels {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    --off: clamp(10px, 1.35vw, 19px);
-  }
-
-  .g-label,
-  .g-ring-label {
-    position: absolute;
-    left: var(--x);
-    top: var(--y);
-    white-space: nowrap;
-  }
-
-  .g-label {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    padding: 3px 7px;
-    border-radius: 6px;
-    background: rgb(248 246 241 / 0.86);
-    line-height: 1.2;
-  }
-
-  .g-label[data-pos='right'] {
-    transform: translate(var(--off), -50%);
-  }
-
-  .g-label-changed[data-pos='right'] {
-    transform: translate(calc(var(--off) + 20px), -50%);
-    background: rgb(248 246 241 / 0.94);
-  }
-
-  .g-label[data-pos='left'] {
-    transform: translate(calc(-100% - var(--off)), -50%);
-    align-items: flex-end;
-    text-align: right;
-  }
-
-  .g-label[data-pos='top'] {
-    transform: translate(-50%, calc(-100% - var(--off) + 4px));
-    align-items: center;
-  }
-
-  .g-label[data-pos='bottom'] {
-    transform: translate(-50%, calc(var(--off) + 4px));
-    align-items: center;
-  }
-
-  .g-label-main {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .g-label-changed .g-label-main {
-    font-family: var(--font-mono);
-    font-size: 0.84rem;
-    font-weight: 560;
-    color: var(--ink);
-  }
-
-  .g-tag {
-    padding: 2px 6px;
-    border-radius: 4px;
-    background: var(--signal);
-    color: #fff;
-    font-family: var(--font-mono);
-    font-size: 0.625rem;
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
-  .g-label-fn .g-label-main {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    color: var(--ink-2);
-  }
-
-  .g-label-flow {
-    pointer-events: auto;
-    cursor: pointer;
-  }
-
-  .g-label-flow .g-label-main {
-    font-size: 0.875rem;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    color: var(--ink);
-  }
-
-  .g-label-sub {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    color: var(--muted);
-  }
-
-  .g-label-unknown .g-label-main {
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: var(--caution);
-  }
-
-  .g-label-context {
-    background: none;
-    padding: 0;
-  }
-
-  .g-label-context .g-label-main {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    color: var(--muted);
-    opacity: 0.8;
-  }
-
-  .g-ring-label {
-    transform: translate(7px, 3px);
-    font-family: var(--font-mono);
-    font-size: 0.625rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    opacity: 0.8;
-  }
-
-  /* ---------- Brief ---------- */
-
-  .brief {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    padding: 24px 26px 26px;
-    min-width: 0;
-  }
-
-  .brief-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
-
-  .brief-open {
-    color: var(--pass);
-    box-shadow: inset 0 0 0 1px rgb(8 122 81 / 0.3);
-  }
-
-  .brief-title {
-    font-size: 1.2rem;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    line-height: 1.25;
-  }
-
-  .brief-meta {
-    margin-top: 6px;
-    font-size: 0.75rem;
-    color: var(--muted);
-  }
-
-  .brief-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    border-block: 1px solid var(--line);
-  }
-
-  .brief-stats div {
-    padding: 14px 0 12px;
-  }
-
-  .brief-stats div + div {
-    padding-left: 18px;
-    border-left: 1px solid var(--line);
-  }
-
-  .brief-stats dt {
-    font-size: 0.8rem;
-    color: var(--muted);
-  }
-
-  .brief-stats dd {
-    margin-top: 4px;
-    font-family: var(--font-display);
-    font-size: 2.6rem;
-    font-weight: 380;
-    line-height: 1;
-    letter-spacing: -0.03em;
-    color: var(--signal);
-    font-variant-numeric: tabular-nums;
-  }
-
-  .brief-stats dd.is-caution {
-    color: var(--caution);
-  }
-
-  .brief-flows {
-    display: grid;
     gap: 6px;
   }
 
-  .flow-btn {
-    position: relative;
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    padding: 11px 12px;
-    border-radius: 10px;
-    text-align: left;
-    box-shadow: inset 0 0 0 1px var(--line);
-    transition:
-      box-shadow 0.35s ease,
-      background-color 0.35s ease,
-      transform 0.5s var(--ease-out);
-  }
-
-  .flow-btn:hover {
+  .trace-dots i {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--surface-3);
     box-shadow: inset 0 0 0 1px var(--line-2);
-    background: rgb(255 255 255 / 0.5);
   }
 
-  .flow-btn[aria-pressed='true'] {
-    background: #fff;
-    box-shadow:
-      inset 0 0 0 1.5px var(--ink),
-      0 10px 24px -16px rgb(18 18 16 / 0.4);
-  }
-
-  .flow-mark {
-    width: 12px;
-    height: 12px;
-    border-radius: 3.5px;
-    border: 1.5px solid var(--ink-3);
-    transition:
-      background-color 0.35s ease,
-      border-color 0.35s ease;
-  }
-
-  .flow-btn[aria-pressed='true'] .flow-mark {
-    background: var(--signal);
-    border-color: var(--signal);
-  }
-
-  .flow-text {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 2px 10px;
+  .trace-title {
+    flex: 1;
     min-width: 0;
+    font-size: 0.78rem;
+    color: var(--text-2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .flow-name {
-    font-size: 0.94rem;
-    font-weight: 580;
-    letter-spacing: -0.01em;
+  .trace-sep {
+    color: var(--text-3);
   }
 
-  .flow-rel {
-    font-size: 0.8rem;
-    color: var(--muted);
-  }
-
-  .flow-pri {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    padding: 3px 8px;
-    border-radius: 999px;
-  }
-
-  .pri-high {
-    color: var(--signal-deep);
-    background: var(--signal-soft);
-  }
-
-  .pri-medium {
-    color: var(--ink-3);
-    background: var(--paper-2);
-  }
-
-  .brief-why {
+  .trace-body {
     display: grid;
-    gap: 8px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    padding: 22px 16px 8px;
   }
 
-  .why-reason {
-    font-size: 0.94rem;
-    line-height: 1.5;
-    color: var(--ink-2);
-    min-height: 3em;
-    text-wrap: pretty;
-  }
-
-  .why-path {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 4px 0;
-    justify-self: start;
-    max-width: 100%;
-    padding: 7px 11px;
-    border-radius: 7px;
-    background: var(--ink);
-    color: var(--night-text);
-    font-size: 0.75rem;
-    line-height: 1.4;
-  }
-
-  .why-path :global(.why-arrow) {
+  /* The changed symbol: the origin of every path */
+  .origin {
     position: relative;
-    display: inline-block;
-    width: 16px;
-    height: 1px;
-    margin: 0 8px;
-    background: var(--signal-night);
+    display: grid;
+    gap: 6px;
+    align-content: center;
+    justify-self: start;
+    padding: 14px 16px;
+    margin-bottom: 26px;
+    min-width: 0;
+    border-radius: var(--r-md);
+    background: var(--volt-tint);
+    box-shadow: inset 0 0 0 1px var(--volt-line), 0 0 40px -14px rgb(200 255 62 / 0.5);
   }
 
-  .why-path :global(.why-arrow)::after {
+  .origin .label {
+    color: var(--volt);
+  }
+
+  .origin-fn {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .origin-meta {
+    font-size: 0.72rem;
+    line-height: 1.5;
+    color: var(--text-2);
+  }
+
+  .origin-ping {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--volt);
+    box-shadow: 0 0 12px var(--volt);
+  }
+
+  .rows {
+    position: relative;
+    display: grid;
+    gap: 10px;
+    padding-left: var(--bus);
+  }
+
+  /* The bus that joins the origin to each row */
+  .rows::before {
     content: '';
     position: absolute;
-    right: 0;
-    top: -2.5px;
-    width: 5px;
-    height: 5px;
-    border: solid var(--signal-night);
-    border-width: 1px 1px 0 0;
-    transform: rotate(45deg);
+    left: 0;
+    top: 26px;
+    bottom: 26px;
+    width: 1.5px;
+    background: linear-gradient(180deg, var(--volt), var(--volt) 72%, var(--amber));
+    transform-origin: top;
   }
 
-  .brief-unknown {
+  .row {
+    position: relative;
+  }
+
+  .row-btn {
+    position: relative;
+    width: 100%;
     display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 12px;
-    align-items: start;
-    margin-top: auto;
+    grid-template-columns: minmax(0, 1fr) minmax(20px, 36px) minmax(0, 1.1fr);
+    grid-template-areas: 'caller wire end';
+    align-items: center;
+    gap: 6px 0;
+    padding: 10px 10px 10px 0;
+    border-radius: var(--r-md);
+    text-align: left;
+    color: inherit;
+    transition: background-color 0.35s var(--ease-out);
+  }
+
+  .row-btn:hover,
+  .row-btn[aria-pressed='true'] {
+    background: rgb(255 255 255 / 0.03);
+  }
+
+  .stub {
+    position: absolute;
+    left: calc(-1 * var(--bus));
+    top: 50%;
+    width: var(--bus);
+    height: 1.5px;
+    background: var(--volt);
+    transform-origin: left;
+  }
+
+  .is-unknown .stub {
+    background: repeating-linear-gradient(90deg, var(--amber) 0 4px, transparent 4px 8px);
+  }
+
+  .node {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+    padding: 9px 12px;
+    border-radius: var(--r-sm);
+    background: var(--surface-2);
+    box-shadow: inset 0 0 0 1px var(--line-2);
+  }
+
+  .node code,
+  .node small {
+    font-family: var(--font-mono);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .node-caller code {
+    font-size: 0.78rem;
+    color: var(--text);
+  }
+
+  .node small,
+  .node-end code {
+    font-size: 0.68rem;
+    color: var(--text-3);
+  }
+
+  .node-caller {
+    grid-area: caller;
+  }
+
+  .node-end {
+    grid-area: end;
+  }
+
+  .node-end b {
+    font-size: 0.92rem;
+    font-weight: 620;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+
+  .is-proven .node-end {
+    box-shadow: inset 0 0 0 1px var(--volt-line);
+    background: linear-gradient(90deg, var(--surface-2), var(--volt-tint));
+  }
+
+  .is-unknown .node-end {
+    box-shadow: inset 0 0 0 1px var(--amber-line);
+    background: linear-gradient(90deg, var(--surface-2), var(--amber-tint));
+    border-radius: var(--r-sm);
+  }
+
+  .is-unknown .node-caller {
+    box-shadow: inset 0 0 0 1px var(--amber-line);
+  }
+
+  .wire {
+    grid-area: wire;
+    position: relative;
+    height: 2px;
+    overflow: visible;
+  }
+
+  .wire::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--volt);
+    transform-origin: left;
+  }
+
+  .is-unknown .wire::before {
+    background: repeating-linear-gradient(90deg, var(--amber) 0 5px, transparent 5px 10px);
+  }
+
+  .wire i {
+    position: absolute;
+    top: -3px;
+    left: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 12px 2px var(--volt);
+    opacity: 0;
+  }
+
+  .is-unknown .wire i {
+    box-shadow: 0 0 12px 2px var(--amber);
+  }
+
+  .row-btn[aria-pressed='true'] .wire i {
+    opacity: 1;
+  }
+
+  .conf {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    justify-self: start;
+    margin-top: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--volt);
+  }
+
+  .is-unknown .conf {
+    color: var(--amber);
+  }
+
+  .conf line {
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  .is-unknown .conf line {
+    stroke-dasharray: 5 4;
+  }
+
+  /* Detail readout */
+  .trace-detail {
+    display: grid;
+    gap: 10px;
+    margin: 14px 16px 0;
+    padding: 14px 16px;
+    border-radius: var(--r-md);
+    background: var(--bg-1);
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+
+  .detail-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 6px 16px;
+  }
+
+  .detail-tests {
+    font-size: 0.7rem;
+    color: var(--text-3);
+  }
+
+  .detail-path {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    font-size: 0.82rem;
+    color: var(--text);
+  }
+
+  .detail-arrow::before {
+    content: '→';
+    color: var(--volt);
+  }
+
+  .detail-reason {
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--text-2);
+  }
+
+  .trace-tally {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    margin: 14px 16px 0;
+    border-radius: var(--r-md);
+    overflow: hidden;
+    background: var(--line);
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+
+  .trace-tally div {
+    display: grid;
+    gap: 4px;
     padding: 12px 14px;
-    border-radius: 10px;
-    border: 1px dashed rgb(227 162 50 / 0.8);
-    background: rgb(227 162 50 / 0.07);
-    font-size: 0.84rem;
+    background: var(--surface);
+  }
+
+  .trace-tally dt {
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+
+  .trace-tally dd {
+    font-family: var(--font-display);
+    font-size: 1.7rem;
+    font-weight: 620;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .trace-tally dd.mono {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    padding-top: 6px;
+    color: var(--text-2);
+  }
+
+  .is-volt {
+    color: var(--volt);
+  }
+
+  .is-amber {
+    color: var(--amber);
+  }
+
+  .trace-caption {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px 18px;
+    padding: 16px;
+    font-size: 0.85rem;
     line-height: 1.5;
-    color: var(--ink-3);
+    color: var(--text-2);
+    max-width: 100%;
   }
 
-  .brief-unknown strong {
-    color: var(--caution);
-    font-weight: 600;
+  .trace-caption > span:first-child {
+    flex: 1 1 320px;
   }
 
-  .unknown-icon {
-    color: var(--caution);
-    padding-top: 1px;
-  }
-
-  .fig-caption {
-    border-top: 1px solid var(--line);
-    font-size: 0.875rem;
-    color: var(--ink-3);
-  }
-
-  .fig-caption code {
-    font-size: 0.8em;
-    padding: 1px 5px;
-    border-radius: 4px;
-    background: var(--paper-2);
-    color: var(--ink);
-  }
-
-  /* ---------- Responsive ---------- */
-
-  @media (max-width: 1180px) {
-    .fig-body {
-      grid-template-columns: minmax(0, 1.35fr) minmax(300px, 1fr);
-    }
-
-    .g-label-context {
-      display: none;
-    }
-  }
-
-  @media (max-width: 960px) {
-    .fig-body {
-      grid-template-columns: 1fr;
-    }
-
-    .graph {
-      border-right: 0;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .brief {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px 28px;
-    }
-
-    .brief-head,
-    .brief-flows,
-    .brief-unknown {
-      grid-column: 1 / -1;
-    }
-  }
-
-  @media (max-width: 720px) {
-    .fig-legend {
-      display: none;
-    }
-
-    .g-label-fn,
-    .g-ring-label {
-      display: none;
-    }
-
-    .g-label {
-      padding: 2px 5px;
-    }
-
-    .g-label[data-pos-sm='top'] {
-      transform: translate(-50%, calc(-100% - var(--off) + 4px));
+  /* Wider: origin on the left, rows on the right, joined by the bus */
+  @media (min-width: 720px) {
+    .trace-body {
+      grid-template-columns: auto minmax(0, 1fr);
       align-items: center;
-      text-align: center;
+      padding: 26px 20px 10px;
     }
 
-    .g-label-flow .g-label-main {
-      font-size: 0.75rem;
+    .origin {
+      margin: 0 var(--bus) 0 0;
+      min-width: 150px;
     }
 
-    .g-label-changed .g-label-main {
-      font-size: 0.72rem;
+    .origin::after {
+      content: '';
+      position: absolute;
+      left: 100%;
+      top: 50%;
+      width: var(--bus);
+      height: 1.5px;
+      background: var(--volt);
+      transform-origin: left;
     }
 
-    .g-label-sub,
-    .g-tag {
-      display: none;
+    .row-btn {
+      grid-template-columns: minmax(0, 1fr) minmax(24px, 44px) minmax(0, 1.1fr);
+    }
+  }
+
+  @media (max-width: 520px) {
+    .trace-tally dd {
+      font-size: 1.35rem;
     }
 
-    .edge-active {
-      stroke-width: 3;
+    .trace-tally dd.mono {
+      font-size: 0.78rem;
+    }
+  }
+
+  /* Entrance: staged with CSS delays, so it needs no script and never flashes. */
+  @media (prefers-reduced-motion: no-preference) {
+    .trace {
+      animation: trace-in 1s var(--ease-out) 0.15s both;
     }
 
-    .brief {
-      display: flex;
-      padding: 20px 18px 22px;
+    .origin {
+      animation: node-in 0.7s var(--ease-out) 0.55s both;
     }
 
-    .fig-bar,
-    .fig-caption {
-      padding: 12px 16px;
+    .origin-ping {
+      animation: ping 2.2s ease-out 1.2s infinite;
     }
 
-    .fig-caption {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 8px;
+    .rows::before {
+      animation: draw-y 0.9s var(--ease-in-out) 0.95s both;
+    }
+
+    .origin::after {
+      animation: draw-x 0.4s var(--ease-in-out) 0.95s both;
+    }
+
+    .stub {
+      animation: draw-x 0.35s var(--ease-in-out) calc(1.15s + var(--n) * 0.36s) both;
+    }
+
+    .node-caller {
+      animation: node-in 0.6s var(--ease-out) calc(1.3s + var(--n) * 0.36s) both;
+    }
+
+    .wire::before {
+      animation: draw-x 0.6s var(--ease-in-out) calc(1.45s + var(--n) * 0.36s) both;
+    }
+
+    .node-end {
+      animation: node-in 0.6s var(--ease-out) calc(1.95s + var(--n) * 0.36s) both;
+    }
+
+    .row-btn[aria-pressed='true'] .wire i {
+      animation: travel 2.6s var(--ease-in-out) 3.4s infinite;
+    }
+  }
+
+  @keyframes trace-in {
+    from {
+      transform: translateY(26px);
+    }
+  }
+
+  @keyframes node-in {
+    from {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+  }
+
+  @keyframes draw-x {
+    from {
+      transform: scaleX(0);
+    }
+  }
+
+  @keyframes draw-y {
+    from {
+      transform: scaleY(0);
+    }
+  }
+
+  @keyframes ping {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgb(200 255 62 / 0.6), 0 0 12px var(--volt);
+    }
+    60% {
+      box-shadow: 0 0 0 10px rgb(200 255 62 / 0), 0 0 12px var(--volt);
+    }
+  }
+
+  @keyframes travel {
+    0% {
+      left: 0;
+      opacity: 0;
+    }
+    12%,
+    88% {
+      opacity: 1;
+    }
+    100% {
+      left: calc(100% - 8px);
+      opacity: 0;
     }
   }
 </style>

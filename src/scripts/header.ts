@@ -1,11 +1,13 @@
-import { gsap } from 'gsap';
-
-export function initHeader(motion: boolean): void {
+/**
+ * Header behaviour for every page. No animation library: the mobile menu entrance is CSS.
+ * Safe when parts are missing (it returns early instead of throwing).
+ */
+export function initHeader(): void {
   const root = document.documentElement;
   const header = document.querySelector<HTMLElement>('[data-header]');
   if (!header) return;
 
-  /* ---------- Scroll state: solid background, hide on scroll down, progress bar ---------- */
+  /* ---------- Scroll state: solid background, hide on scroll down, page progress ---------- */
   const progress = header.querySelector<HTMLElement>('[data-progress]');
   let lastY = window.scrollY;
   let queued = false;
@@ -21,7 +23,8 @@ export function initHeader(motion: boolean): void {
       else if (y < lastY - 4 || y <= 520) header.classList.remove('is-hidden');
     }
     lastY = y;
-    progress?.style.setProperty('--progress', max > 0 ? (y / max).toFixed(4) : '0');
+    // Progress is per page: the scroll position through the page you are reading.
+    progress?.style.setProperty('--progress', max > 0 ? Math.min(1, y / max).toFixed(4) : '0');
   };
 
   window.addEventListener(
@@ -33,15 +36,17 @@ export function initHeader(motion: boolean): void {
     },
     { passive: true }
   );
+  window.addEventListener('resize', update, { passive: true });
   header.addEventListener('focusin', () => header.classList.remove('is-hidden'));
   update();
 
-  /* ---------- Sliding pill behind the hovered / focused nav link ---------- */
+  /* ---------- Sliding pill: rests under the current page, follows hover and focus ---------- */
   const track = header.querySelector<HTMLElement>('[data-nav]');
   const indicator = header.querySelector<HTMLElement>('[data-nav-indicator]');
   const links = Array.from(header.querySelectorAll<HTMLAnchorElement>('[data-nav-link]'));
+  const current = links.find(link => link.getAttribute('aria-current') === 'page') ?? null;
 
-  const moveIndicator = (link: HTMLAnchorElement | null) => {
+  const moveIndicator = (link: HTMLAnchorElement | null, { instant = false } = {}) => {
     if (!track || !indicator) return;
     links.forEach(item => item.classList.toggle('is-hot', item === link));
     if (!link) {
@@ -50,7 +55,7 @@ export function initHeader(motion: boolean): void {
     }
     const trackBox = track.getBoundingClientRect();
     const linkBox = link.getBoundingClientRect();
-    const wasHidden = indicator.style.opacity !== '1';
+    const wasHidden = instant || indicator.style.opacity !== '1';
     if (wasHidden) indicator.style.transition = 'none';
     indicator.style.width = `${linkBox.width}px`;
     indicator.style.transform = `translateX(${linkBox.left - trackBox.left}px)`;
@@ -61,33 +66,17 @@ export function initHeader(motion: boolean): void {
     indicator.style.opacity = '1';
   };
 
+  const rest = (options?: { instant?: boolean }) => moveIndicator(current, options);
+
   links.forEach(link => {
     link.addEventListener('pointerenter', () => moveIndicator(link));
     link.addEventListener('focus', () => moveIndicator(link));
-    link.addEventListener('blur', () => moveIndicator(null));
+    link.addEventListener('blur', () => rest());
   });
-  track?.addEventListener('pointerleave', () => moveIndicator(null));
-
-  /* ---------- Scrollspy: mark the section currently in the middle of the viewport ---------- */
-  if ('IntersectionObserver' in window) {
-    const byId = new Map(links.map(link => [link.hash.slice(1), link]));
-    const spy = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
-          const link = byId.get(entry.target.id);
-          if (!link) return;
-          link.classList.toggle('is-current', entry.isIntersecting);
-          if (entry.isIntersecting) link.setAttribute('aria-current', 'true');
-          else link.removeAttribute('aria-current');
-        });
-      },
-      { rootMargin: '-45% 0px -50% 0px' }
-    );
-    byId.forEach((_, id) => {
-      const section = document.getElementById(id);
-      if (section) spy.observe(section);
-    });
-  }
+  track?.addEventListener('pointerleave', () => rest());
+  rest({ instant: true });
+  document.fonts?.ready?.then(() => rest({ instant: true }));
+  window.addEventListener('resize', () => rest({ instant: true }), { passive: true });
 
   /* ---------- Mobile menu ---------- */
   const toggle = header.querySelector<HTMLButtonElement>('[data-menu-toggle]');
@@ -106,13 +95,7 @@ export function initHeader(motion: boolean): void {
     });
     if (open) {
       header.classList.remove('is-hidden');
-      if (motion) {
-        gsap.fromTo(
-          menu.querySelectorAll('.mobile-links a, .mobile-menu-foot'),
-          { yPercent: 60, opacity: 0 },
-          { yPercent: 0, opacity: 1, duration: 0.8, stagger: 0.06, ease: 'expo.out', overwrite: true }
-        );
-      }
+      menu.querySelector<HTMLElement>('a')?.focus({ preventScroll: true });
     } else if (restoreFocus) {
       toggle.focus();
     }
@@ -123,7 +106,7 @@ export function initHeader(motion: boolean): void {
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape' && !menu.hidden) setOpen(false, { restoreFocus: true });
   });
-  window.matchMedia('(min-width: 861px)').addEventListener('change', event => {
+  window.matchMedia('(min-width: 1001px)').addEventListener('change', event => {
     if (event.matches && !menu.hidden) setOpen(false);
   });
 }

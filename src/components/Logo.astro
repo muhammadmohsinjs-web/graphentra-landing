@@ -5,23 +5,17 @@ interface Props {
   class?: string;
 }
 
-const { size = 28, wordmark = true, class: className } = Astro.props;
+const { size = 30, wordmark = true, class: className } = Astro.props;
 ---
 
 <span class:list={['logo', className]}>
   <svg class="logo-mark" width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" focusable="false">
-    <path
-      class="logo-trace"
-      d="M22.36 9.64A9 9 0 1 0 25 16h-9"
-      pathLength="1"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2.6"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    />
-    <circle class="logo-origin" cx="22.36" cy="9.64" r="2.3" fill="currentColor" />
-    <circle class="logo-core" cx="16" cy="16" r="2.9" />
+    <rect class="logo-tile" width="32" height="32" rx="9" />
+    <path class="logo-edge" d="M9.5 16c5 0 5-7 12-7" fill="none" />
+    <path class="logo-edge is-dashed" d="M9.5 16c5 0 5 7 12 7" fill="none" />
+    <circle class="logo-src" cx="9.5" cy="16" r="3" />
+    <circle class="logo-hit" cx="22.5" cy="9" r="2.6" />
+    <circle class="logo-miss" cx="22.5" cy="23" r="2.4" fill="none" />
   </svg>
   {wordmark && <span class="logo-word">Graphentra</span>}
 </span>
@@ -30,22 +24,45 @@ const { size = 28, wordmark = true, class: className } = Astro.props;
   .logo {
     display: inline-flex;
     align-items: center;
-    gap: 9px;
-    color: var(--ink);
+    gap: 10px;
+    color: var(--text);
   }
 
-  .logo-core {
-    fill: var(--signal);
-    transform-box: fill-box;
-    transform-origin: center;
+  .logo-tile {
+    fill: var(--surface-2);
+    stroke: var(--line-2);
+    stroke-width: 1;
+  }
+
+  .logo-edge {
+    stroke: var(--volt);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+  }
+
+  .logo-edge.is-dashed {
+    stroke: var(--amber);
+    stroke-dasharray: 2.4 2.6;
+  }
+
+  .logo-src {
+    fill: var(--volt);
+  }
+
+  .logo-hit {
+    fill: var(--volt);
+  }
+
+  .logo-miss {
+    stroke: var(--amber);
+    stroke-width: 1.6;
   }
 
   .logo-word {
     font-family: var(--font-display);
-    font-size: 1.5rem;
-    font-weight: 500;
-    letter-spacing: -0.025em;
+    font-size: 1.28rem;
+    font-weight: 650;
+    letter-spacing: -0.03em;
     line-height: 1;
-    translate: 0 -1px;
   }
 </style>

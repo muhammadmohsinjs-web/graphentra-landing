@@ -1,41 +1,54 @@
 ---
-import Base from '../layouts/Base.astro';
-import Header from '../components/Header.astro';
+import PageLayout from '../layouts/PageLayout.astro';
 import Hero from '../components/Hero.astro';
 import Marquee from '../components/Marquee.astro';
 import Problem from '../components/Problem.astro';
 import HowItWorks from '../components/HowItWorks.astro';
-import Platform from '../components/Platform.astro';
-import Principles from '../components/Principles.astro';
-import Teams from '../components/Teams.astro';
+import SectionHead from '../components/SectionHead.astro';
+import PrCheck from '../components/PrCheck.astro';
+import WhyNow from '../components/WhyNow.astro';
+import Differentiators from '../components/Differentiators.astro';
+import Audiences from '../components/Audiences.astro';
+import TrustTeaser from '../components/TrustTeaser.astro';
 import Roadmap from '../components/Roadmap.astro';
 import Faq from '../components/Faq.astro';
 import EarlyAccess from '../components/EarlyAccess.astro';
-import Footer from '../components/Footer.astro';
-
-const title = 'Graphentra — See how far every code change reaches';
-const description =
-  'Graphentra traces a code change through your dependency graph to the screens, endpoints and flows it can reach — then helps your team verify exactly those, with evidence you can review. In development; early access open.';
 ---
 
-<Base title={title} description={description}>
-  <a class="skip-link" href="#main">Skip to content</a>
-  <Header />
-  <main id="main">
-    <Hero />
-    <Marquee />
-    <Problem />
-    <HowItWorks />
-    <Platform />
-    <Principles />
-    <Teams />
-    <Roadmap />
-    <Faq />
-    <EarlyAccess />
-  </main>
-  <Footer />
-</Base>
+<!-- The early-access form lives here, so the home page has no call-to-action band of its own. -->
+<PageLayout page="home" cta={false}>
+  <Hero />
+  <Marquee />
+  <Problem />
+  <HowItWorks index="02" />
 
-<script>
-  import '../scripts/main';
-</script>
+  <section class="section check" id="pr-check" aria-labelledby="check-title">
+    <div class="container">
+      <SectionHead index="03" kicker="The pull request check" id="check-title">
+        <Fragment slot="title">What your team <em>would see.</em></Fragment>
+        One check on the pull request: the surfaces a change can reach, the path to each, whether a test reaches them, and what could not be traced.
+      </SectionHead>
+      <div data-reveal>
+        <PrCheck idPrefix="home" />
+      </div>
+      <p class="check-link" data-reveal>
+        <a class="link" href="/product/">See how the check is built</a>
+      </p>
+    </div>
+  </section>
+
+  <WhyNow index="04" />
+  <Differentiators index="05" />
+  <Audiences index="06" />
+  <TrustTeaser />
+  <Roadmap />
+  <Faq index="09" />
+  <EarlyAccess />
+</PageLayout>
+
+<style>
+  .check-link {
+    margin-top: clamp(24px, 3vw, 40px);
+    font-size: 1rem;
+  }
+</style>

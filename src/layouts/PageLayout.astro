@@ -1,0 +1,32 @@
+---
+import Base from './Base.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { pages, type PageId } from '../data/site';
+
+interface Props {
+  /** Which page this is. Title, description, canonical and the nav's current link come from src/data/site.ts. */
+  page: PageId;
+  /** Props for the slim call-to-action band at the end of the page, or false to leave it out. */
+  cta?: false | { interest?: 'Early access' | 'Design partnership' | 'Paid pilot' | 'Product updates'; title?: string; text?: string; label?: string };
+  themeColor?: string;
+}
+
+const { page, cta = {}, themeColor } = Astro.props;
+const meta = pages[page];
+---
+
+<Base title={meta.title} description={meta.description} path={meta.path} noindex={meta.hidden} themeColor={themeColor}>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <Header current={page} />
+  <main id="main" data-page={page}>
+    <slot />
+  </main>
+  {cta !== false && <CtaBand {...cta} />}
+  <Footer variant={page === 'home' ? 'home' : 'page'} />
+</Base>
+
+<script>
+  import '../scripts/main';
+</script>

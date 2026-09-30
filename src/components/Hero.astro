@@ -1,125 +1,123 @@
 ---
 import HeroFigure from './HeroFigure.astro';
 import Icon from './Icon.astro';
+import { hero } from '../data/site';
 ---
 
 <section class="hero" id="top" aria-labelledby="hero-title">
   <div class="container hero-grid">
-    <div class="hero-meta" data-intro>
-      <p class="label">Change intelligence for QA &amp; engineering teams</p>
-      <p class="chip hero-status"><span class="pulse-dot" aria-hidden="true"></span>In development · Early access open</p>
-    </div>
+    <div class="hero-copy">
+      <p class="chip hero-status"><span class="pulse-dot" aria-hidden="true"></span>{hero.chip}</p>
+      <p class="label hero-eyebrow">{hero.eyebrow}</p>
 
-    <h1 class="display hero-title" id="hero-title" data-intro data-hero-title>
-      Small diff.<br />
-      <em>Long reach.</em>
-    </h1>
+      <h1 class="display hero-title enter-title" id="hero-title" data-hero-title>
+        <span class="hero-line enter-warm">{hero.title[0]}</span>
+        <span class="hero-line"><em>{hero.title[1]}</em><span class="hero-caret" aria-hidden="true"></span></span>
+      </h1>
 
-    <div class="hero-aside">
-      <p class="lede" data-intro>
-        Graphentra follows a code change through your dependency graph to every screen, endpoint and flow it can reach — so your team verifies what matters and ships on evidence, not instinct.
-      </p>
-      <div class="hero-actions" data-intro>
-        <a class="btn" href="#early-access" data-magnetic>
-          <span>Request early access</span>
+      <p class="lede hero-lede enter-lift">{hero.sub}</p>
+
+      <div class="hero-actions enter-lift" data-cta-location="hero">
+        <a class="btn" href="#early-access">
+          <span>{hero.primaryCta}</span>
           <span class="btn-icon" aria-hidden="true"><Icon name="arrow" /></span>
         </a>
         <a class="btn btn-ghost" href="#early-access" data-interest="Paid pilot">Discuss a pilot</a>
       </div>
     </div>
-  </div>
 
-  <div class="container hero-figure-wrap">
-    <HeroFigure />
+    <div class="hero-figure-wrap">
+      <HeroFigure />
+    </div>
   </div>
 </section>
 
 <style>
   .hero {
     position: relative;
-    padding-top: calc(var(--header-h) + clamp(28px, 5vw, 64px));
-    padding-bottom: clamp(72px, 9vw, 128px);
+    padding-top: calc(var(--header-h) + clamp(28px, 5vw, 72px));
+    padding-bottom: clamp(56px, 7vw, 104px);
   }
 
   .hero-grid {
     display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    column-gap: 24px;
-    align-items: end;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(36px, 5vw, 64px);
+    align-items: center;
   }
 
-  .hero-meta {
-    grid-column: 1 / -1;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px 24px;
-    padding-bottom: clamp(20px, 2.6vw, 34px);
-    margin-bottom: clamp(18px, 2.4vw, 30px);
-    border-bottom: 1px solid var(--line);
+  .hero-copy {
+    display: grid;
+    justify-items: start;
+    gap: 22px;
   }
 
   .hero-status {
-    color: var(--ink-2);
-    background: rgb(255 255 255 / 0.4);
+    background: var(--volt-tint);
+    color: var(--text);
+    box-shadow: inset 0 0 0 1px var(--volt-line);
+  }
+
+  .hero-eyebrow {
+    margin-top: 6px;
   }
 
   .hero-title {
-    grid-column: 1 / span 8;
-    font-size: clamp(3.6rem, 10.4vw + 0.6rem, 10.75rem);
-    font-weight: 340;
-    line-height: 0.9;
-    letter-spacing: -0.042em;
-    margin-left: -0.05em;
+    font-size: clamp(3.2rem, 4.8vw + 1rem, 6.4rem);
+    font-weight: 650;
+    line-height: 0.92;
+    letter-spacing: -0.05em;
+    text-wrap: nowrap;
   }
 
-  .hero-title em {
-    font-weight: 330;
+  .hero-line {
+    display: block;
   }
 
-  .hero-aside {
-    grid-column: 9 / -1;
-    display: grid;
-    gap: 28px;
-    padding-bottom: 0.6em;
+  .hero-caret {
+    display: inline-block;
+    width: 0.09em;
+    height: 0.78em;
+    margin-left: 0.1em;
+    border-radius: 2px;
+    background: var(--volt);
+    box-shadow: 0 0 18px var(--volt);
+    vertical-align: -0.04em;
+  }
+
+  .hero-lede {
+    max-width: 34rem;
   }
 
   .hero-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
+    margin-top: 6px;
   }
 
-  .hero-figure-wrap {
-    margin-top: clamp(40px, 6vw, 80px);
-  }
-
-  @media (max-width: 1180px) {
-    .hero-title {
-      grid-column: 1 / -1;
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-caret {
+      animation: hero-blink 1.05s steps(1) 0.6s infinite;
     }
+  }
 
-    .hero-aside {
-      grid-column: 1 / span 9;
-      margin-top: 32px;
-      padding-bottom: 0;
+  @keyframes hero-blink {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .hero-grid {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: clamp(32px, 4vw, 64px);
     }
   }
 
   @media (max-width: 720px) {
-    .hero-aside {
-      grid-column: 1 / -1;
-      gap: 24px;
-    }
-
     .hero-actions .btn {
       flex: 1 1 auto;
-      justify-content: space-between;
-    }
-
-    .hero-actions .btn-ghost {
-      justify-content: center;
     }
   }
 </style>

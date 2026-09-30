@@ -1,0 +1,229 @@
+---
+import { agentSession } from '../data/example';
+import ExampleLabel from './ExampleLabel.astro';
+import StatusChip from './StatusChip.astro';
+
+const label: Record<string, string> = { proven: 'proven', likely: 'likely', unknown: 'unknown' };
+---
+
+<figure class="agent" data-example data-agent>
+  <div class="agent-bar">
+    <span class="agent-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span class="agent-title">Coding agent · MCP session</span>
+    <StatusChip id="mcp-server" />
+  </div>
+
+  <div class="agent-body" role="group" aria-label="Transcript of an agent session">
+    {
+      agentSession.map(line => {
+        if (line.kind === 'agent') {
+          return (
+            <p class="ln ln-agent" data-line>
+              <span class="who">agent</span>
+              <span>{line.text}</span>
+            </p>
+          );
+        }
+        if (line.kind === 'call') {
+          return (
+            <p class="ln ln-call" data-line>
+              <span class="who">calls</span>
+              <span>
+                <code>{line.tool}</code>
+                <span class="args">({line.args})</span>
+              </span>
+            </p>
+          );
+        }
+        if (line.kind === 'result') {
+          return (
+            <p class="ln ln-result" data-line>
+              <span class="who" aria-hidden="true">←</span>
+              <span>{line.text}</span>
+            </p>
+          );
+        }
+        return (
+          <p class:list={['ln', 'ln-row', `is-${line.confidence}`]} data-line>
+            <span class="who" aria-hidden="true"></span>
+            <span class="row-surface">{line.surface}</span>
+            <span class="row-conf">
+              <svg width="26" height="8" viewBox="0 0 26 8" aria-hidden="true" focusable="false">
+                <line x1="2" y1="4" x2="24" y2="4"></line>
+              </svg>
+              {label[line.confidence]}
+              {line.note ? `, ${line.note}` : ''}
+            </span>
+          </p>
+        );
+      })
+    }
+  </div>
+
+  <figcaption class="agent-caption">
+    <ExampleLabel />
+    <span>An agent asks what a function reaches before it edits, and what its edit reached afterwards.</span>
+  </figcaption>
+</figure>
+
+<style>
+  .agent {
+    display: grid;
+    gap: 14px;
+  }
+
+  .agent-bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+    background: var(--surface-2);
+    box-shadow: inset 0 0 0 1px var(--line-2);
+  }
+
+  .agent-dots {
+    display: flex;
+    gap: 6px;
+  }
+
+  .agent-dots i {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--surface-3);
+    box-shadow: inset 0 0 0 1px var(--line-3);
+  }
+
+  .agent-title {
+    flex: 1;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    color: var(--text-2);
+  }
+
+  .agent-body {
+    display: grid;
+    gap: 6px;
+    margin-top: -14px;
+    padding: 18px 20px 22px;
+    border-radius: 0 0 var(--r-lg) var(--r-lg);
+    background: var(--bg-1);
+    box-shadow: inset 0 0 0 1px var(--line-2), 0 50px 100px -50px rgb(0 0 0 / 0.95);
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 1.6;
+    overflow-x: auto;
+  }
+
+  .ln {
+    display: grid;
+    grid-template-columns: 4.6em minmax(0, 1fr);
+    gap: 12px;
+    align-items: baseline;
+  }
+
+  .who {
+    color: var(--text-3);
+    text-transform: lowercase;
+  }
+
+  .ln-agent .who {
+    color: var(--volt);
+  }
+
+  .ln-call code {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .args {
+    color: var(--amber);
+  }
+
+  .ln-result {
+    color: var(--text-2);
+  }
+
+  .ln-row {
+    grid-template-columns: 4.6em minmax(0, 1fr) auto;
+  }
+
+  .row-surface {
+    color: var(--text);
+  }
+
+  .row-conf {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.76rem;
+  }
+
+  .row-conf line {
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  .is-proven .row-conf {
+    color: var(--volt);
+  }
+
+  .is-unknown .row-conf {
+    color: var(--amber);
+  }
+
+  .is-unknown .row-conf line {
+    stroke-dasharray: 5 4;
+  }
+
+  .agent-caption {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    font-size: 0.86rem;
+    color: var(--text-2);
+  }
+
+  /* Typing reveal (motion only). Without JavaScript, or with reduced motion, the whole transcript is shown. */
+  :global(html.motion) [data-agent].is-armed .ln:not(.is-shown) {
+    visibility: hidden;
+  }
+
+  @media (max-width: 560px) {
+    .ln {
+      grid-template-columns: 3.6em minmax(0, 1fr);
+      gap: 8px;
+    }
+
+    .ln-row {
+      grid-template-columns: 3.6em minmax(0, 1fr);
+    }
+
+    .row-conf {
+      grid-column: 2;
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-agent]').forEach(root => {
+    if (!document.documentElement.classList.contains('motion') || !('IntersectionObserver' in window)) return;
+    const lines = Array.from(root.querySelectorAll<HTMLElement>('[data-line]'));
+    root.classList.add('is-armed');
+    const observer = new IntersectionObserver(
+      entries => {
+        if (!entries.some(entry => entry.isIntersecting)) return;
+        observer.disconnect();
+        lines.forEach((line, index) => window.setTimeout(() => line.classList.add('is-shown'), 260 * index));
+      },
+      { threshold: 0.35 }
+    );
+    observer.observe(root);
+    // Safety net: never leave the transcript hidden.
+    window.setTimeout(() => lines.forEach(line => line.classList.add('is-shown')), 9000);
+  });
+</script>
